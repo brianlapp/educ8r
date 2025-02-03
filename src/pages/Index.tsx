@@ -4,15 +4,12 @@ import { useEffect } from "react";
 
 const Index = () => {
   useEffect(() => {
-    // Create a new script element
     const script = document.createElement('script');
     script.src = 'https://widget.gleamjs.io/e.js';
     script.async = true;
     
-    // Add the script to the document
     document.body.appendChild(script);
     
-    // Cleanup function to remove the script when component unmounts
     return () => {
       document.body.removeChild(script);
     };
@@ -23,10 +20,10 @@ const Index = () => {
       <Navbar />
       
       {/* Main content with padding for fixed navbar */}
-      <main className="flex-grow container mx-auto px-4 pt-28 pb-12">
-        <div className="w-full max-w-4xl mx-auto">
+      <main className="flex-grow w-full pt-28 pb-12 bg-gray-50">
+        <div className="w-full">
           <div className="animate-fade-in">
-            <div className="w-full min-h-[500px] bg-gray-50 rounded-lg shadow-sm p-4">
+            <div className="w-full min-h-[500px] p-4">
               <a 
                 className="e-widget" 
                 href="https://gleam.io/dAUCD/instant-entry" 
