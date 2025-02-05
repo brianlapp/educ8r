@@ -19,12 +19,19 @@ const Index = () => {
     const handleMessage = async (event: MessageEvent) => {
       if (event.data.gleam && event.data.gleam.type === "entry") {
         try {
+          console.log("Forwarding entry data to webhook handler:", event.data.gleam);
+          
           // Forward the entry data to our webhook handler
           const { data, error } = await supabase.functions.invoke('webhook-handler', {
             body: event.data.gleam
           });
 
-          if (error) throw error;
+          if (error) {
+            console.error("Webhook handler error:", error);
+            throw error;
+          }
+
+          console.log("Webhook handler response:", data);
 
           toast({
             title: "Success!",
@@ -65,7 +72,7 @@ const Index = () => {
               alt="Find Your Parents Today"
               className="w-full h-auto rounded-lg shadow-lg object-cover"
               loading="eager"
-              fetchpriority="high"
+              fetchPriority="high"
             />
           </div>
 

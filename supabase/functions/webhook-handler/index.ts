@@ -15,7 +15,7 @@ serve(async (req) => {
   try {
     // Get the request body
     const body = await req.json()
-    console.log('Received webhook data:', body)
+    console.log('Received webhook data:', JSON.stringify(body, null, 2))
 
     // Initialize Supabase client
     const supabaseClient = createClient(
@@ -24,6 +24,7 @@ serve(async (req) => {
     )
 
     // Store the submission in the database
+    console.log('Storing submission in database...')
     const { data: submissionData, error: submissionError } = await supabaseClient
       .from('form_submissions')
       .insert([
@@ -36,10 +37,14 @@ serve(async (req) => {
       .single()
 
     if (submissionError) {
+      console.error('Error storing submission:', submissionError)
       throw submissionError
     }
 
+    console.log('Submission stored successfully:', submissionData)
+
     // Get the Zapier webhook URL from the database
+    console.log('Fetching Zapier webhook URL...')
     const { data: webhookConfig, error: webhookError } = await supabaseClient
       .from('webhook_configs')
       .select('zapier_webhook_url')
@@ -47,6 +52,7 @@ serve(async (req) => {
       .single()
 
     if (webhookError) {
+      console.error('Error fetching webhook URL:', webhookError)
       throw webhookError
     }
 
@@ -54,6 +60,7 @@ serve(async (req) => {
       throw new Error('No Zapier webhook URL configured')
     }
 
+    console.log('Forwarding data to Zapier...')
     // Forward the data to Zapier
     const zapierResponse = await fetch(webhookConfig.zapier_webhook_url, {
       method: 'POST',
@@ -64,8 +71,11 @@ serve(async (req) => {
     })
 
     if (!zapierResponse.ok) {
+      console.error('Zapier response not OK:', zapierResponse.statusText)
       throw new Error(`Failed to forward to Zapier: ${zapierResponse.statusText}`)
     }
+
+    console.log('Successfully forwarded to Zapier')
 
     // Update the submission as processed
     const { error: updateError } = await supabaseClient
@@ -74,8 +84,11 @@ serve(async (req) => {
       .eq('id', submissionData.id)
 
     if (updateError) {
+      console.error('Error updating submission status:', updateError)
       throw updateError
     }
+
+    console.log('Submission marked as processed')
 
     return new Response(
       JSON.stringify({ success: true }),
