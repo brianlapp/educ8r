@@ -54,15 +54,8 @@ const Index = () => {
 
           console.log("Webhook request completed");
           
-          toast({
-            title: "Entry Submitted",
-            description: "You will be redirected shortly...",
-          });
-
-          setTimeout(() => {
-            console.log("Navigating to thank you page...");
-            navigate("/thank-you");
-          }, 2000);
+          // Immediately navigate to thank you page after successful form submission
+          navigate("/thank-you");
           
         } catch (error) {
           console.error("Error in webhook flow:", error);
