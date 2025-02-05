@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useEffect, useState } from "react";
@@ -32,6 +31,7 @@ const Index = () => {
             return;
           }
 
+          // Send data to webhook with all necessary information
           const response = await fetch(savedWebhookUrl, {
             method: "POST",
             headers: {
@@ -41,10 +41,17 @@ const Index = () => {
             body: JSON.stringify({
               timestamp: new Date().toISOString(),
               entry: event.data.gleam,
-              source: window.location.origin
+              source: window.location.origin,
+              tags: ["freeparentsearch", "gleam-entry"],
+              user_data: {
+                ...event.data.gleam.participant,
+                entry_type: event.data.gleam.type
+              }
             }),
           });
 
+          console.log("Webhook triggered, showing toast and redirecting");
+          
           toast({
             title: "Thank you for entering!",
             description: "You will be redirected shortly...",
