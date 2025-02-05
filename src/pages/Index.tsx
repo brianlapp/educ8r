@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
@@ -14,9 +14,14 @@ const Index = () => {
     const savedUrl = localStorage.getItem("webhookUrl");
     if (savedUrl) {
       setWebhookUrl(savedUrl);
-      console.log("Webhook URL loaded successfully:", savedUrl);
+      console.log("Index: Webhook URL loaded successfully:", savedUrl);
     } else {
-      console.warn("No webhook URL found in localStorage");
+      console.warn("Index: No webhook URL found in localStorage");
+      toast({
+        title: "Warning",
+        description: "No webhook URL configured. Please set up the webhook URL in the admin panel.",
+        variant: "destructive",
+      });
     }
 
     const script = document.createElement('script');
@@ -26,14 +31,12 @@ const Index = () => {
 
     // Listen for messages from Gleam
     const handleMessage = async (event: MessageEvent) => {
-      console.log("Message event received:", event.data);
-
       if (event.data.gleam && event.data.gleam.type === "entry") {
-        console.log("Gleam entry detected:", event.data.gleam);
+        console.log("Index: Gleam entry detected:", event.data.gleam);
         
         try {
           if (!webhookUrl) {
-            console.error("No webhook URL configured");
+            console.error("Index: No webhook URL configured");
             toast({
               title: "Configuration Error",
               description: "No webhook URL configured. Please set up the webhook URL in the admin panel.",
@@ -53,7 +56,7 @@ const Index = () => {
             }
           };
 
-          console.log("Sending webhook payload:", webhookPayload);
+          console.log("Index: Sending webhook payload:", webhookPayload);
 
           const response = await fetch(webhookUrl, {
             method: "POST",
@@ -64,7 +67,7 @@ const Index = () => {
             body: JSON.stringify(webhookPayload),
           });
 
-          console.log("Webhook request completed, navigating to thank you page");
+          console.log("Index: Webhook request completed, navigating to thank you page");
           
           toast({
             title: "Success!",
@@ -75,7 +78,7 @@ const Index = () => {
           navigate("/thank-you");
           
         } catch (error) {
-          console.error("Error in webhook flow:", error);
+          console.error("Index: Error in webhook flow:", error);
           toast({
             title: "Error",
             description: "There was an issue processing your entry. Please try again.",

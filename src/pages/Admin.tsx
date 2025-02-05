@@ -1,7 +1,8 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
 
 const Admin = () => {
   const { toast } = useToast();
@@ -13,6 +14,8 @@ const Admin = () => {
     if (savedUrl) {
       setWebhookUrl(savedUrl);
       console.log("Admin: Loaded existing webhook URL:", savedUrl);
+    } else {
+      console.log("Admin: No webhook URL found in localStorage");
     }
   }, []);
 
@@ -27,8 +30,9 @@ const Admin = () => {
     }
 
     try {
-      localStorage.setItem("webhookUrl", webhookUrl.trim());
-      console.log("Admin: Saved webhook URL:", webhookUrl);
+      const trimmedUrl = webhookUrl.trim();
+      localStorage.setItem("webhookUrl", trimmedUrl);
+      console.log("Admin: Successfully saved webhook URL:", trimmedUrl);
       toast({
         title: "Settings saved",
         description: "Your webhook URL has been saved successfully.",
@@ -57,13 +61,13 @@ const Admin = () => {
                 <label htmlFor="webhookUrl" className="block text-sm font-medium text-gray-700 mb-2">
                   Zapier Webhook URL
                 </label>
-                <input
+                <Input
                   id="webhookUrl"
                   type="text"
                   placeholder="Enter your Zapier webhook URL"
                   value={webhookUrl}
                   onChange={(e) => setWebhookUrl(e.target.value)}
-                  className="w-full max-w-md px-4 py-2 border rounded-lg"
+                  className="w-full max-w-md"
                 />
                 <p className="mt-2 text-sm text-gray-500">
                   This webhook URL will be used to trigger notifications when users complete the Gleam form.
