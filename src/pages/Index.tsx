@@ -12,12 +12,17 @@ const Index = () => {
   useEffect(() => {
     // Load webhook URL from localStorage
     const savedUrl = localStorage.getItem("webhookUrl");
-    if (savedUrl) {
-      setWebhookUrl(savedUrl);
-      console.log("Webhook URL loaded from localStorage:", savedUrl);
-    } else {
-      console.warn("No webhook URL found in localStorage");
+    if (!savedUrl) {
+      console.warn("No webhook URL found in localStorage - redirecting to admin");
+      toast({
+        title: "Setup Required",
+        description: "Please configure the webhook URL in the admin panel first.",
+      });
+      navigate("/admin");
+      return;
     }
+    setWebhookUrl(savedUrl);
+    console.log("Webhook URL loaded successfully");
 
     const script = document.createElement('script');
     script.src = 'https://widget.gleamjs.io/e.js';
@@ -30,13 +35,7 @@ const Index = () => {
         console.log("Gleam entry detected:", event.data.gleam);
         
         try {
-          const savedWebhookUrl = localStorage.getItem("webhookUrl");
-          if (!savedWebhookUrl) {
-            console.error("No webhook URL configured");
-            return;
-          }
-
-          console.log("Preparing webhook payload with data:", {
+          const webhookPayload = {
             timestamp: new Date().toISOString(),
             entry: event.data.gleam,
             source: window.location.origin,
@@ -45,25 +44,17 @@ const Index = () => {
               ...event.data.gleam.participant,
               entry_type: event.data.gleam.type
             }
-          });
+          };
 
-          // Send data to webhook with all necessary information
-          const response = await fetch(savedWebhookUrl, {
+          console.log("Sending webhook payload:", webhookPayload);
+
+          const response = await fetch(savedUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             mode: "no-cors",
-            body: JSON.stringify({
-              timestamp: new Date().toISOString(),
-              entry: event.data.gleam,
-              source: window.location.origin,
-              tags: ["freeparentsearch", "gleam-entry"],
-              user_data: {
-                ...event.data.gleam.participant,
-                entry_type: event.data.gleam.type
-              }
-            }),
+            body: JSON.stringify(webhookPayload),
           });
 
           console.log("Webhook request completed");
@@ -73,9 +64,8 @@ const Index = () => {
             description: "You will be redirected shortly...",
           });
 
-          // Ensure redirect happens after toast
           setTimeout(() => {
-            console.log("Attempting navigation to thank you page...");
+            console.log("Navigating to thank you page...");
             navigate("/thank-you");
           }, 2000);
           
@@ -83,7 +73,7 @@ const Index = () => {
           console.error("Error in webhook flow:", error);
           toast({
             title: "Error",
-            description: "There was an issue processing your entry.",
+            description: "There was an issue processing your entry. Please try again.",
             variant: "destructive",
           });
         }
