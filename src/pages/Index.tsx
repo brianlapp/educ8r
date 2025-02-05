@@ -17,13 +17,21 @@ const Index = () => {
 
     // Listen for messages from Gleam
     const handleMessage = async (event: MessageEvent) => {
-      if (event.data.gleam && event.data.gleam.type === "entry") {
+      // Log all Gleam events for debugging
+      if (event.data.gleam) {
+        console.log("Gleam event received:", event.data.gleam);
+      }
+
+      if (event.data.gleam?.type === "entry") {
         try {
-          console.log("Forwarding entry data to webhook handler:", event.data.gleam);
+          console.log("Processing entry data:", event.data.gleam);
           
           // Forward the entry data to our webhook handler
           const { data, error } = await supabase.functions.invoke('webhook-handler', {
-            body: event.data.gleam
+            body: {
+              ...event.data.gleam,
+              timestamp: new Date().toISOString()
+            }
           });
 
           if (error) {
@@ -43,7 +51,7 @@ const Index = () => {
             navigate("/thank-you");
           }, 1000);
         } catch (error) {
-          console.error("Error forwarding entry:", error);
+          console.error("Error processing entry:", error);
           toast({
             title: "Error",
             description: "There was an error submitting your entry. Please try again.",
