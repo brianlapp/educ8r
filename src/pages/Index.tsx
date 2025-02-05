@@ -24,9 +24,9 @@ const Index = () => {
       <main className="flex-grow w-full pt-28 pb-12 bg-gray-50">
         <div className="w-full max-w-7xl mx-auto px-4 lg:px-8">
           <div className="animate-fade-in">
-            <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8 lg:gap-12">
-              {/* Image section */}
-              <div className="w-full lg:w-1/3 flex justify-center">
+            <div className="flex flex-col lg:flex-row items-center lg:items-start relative">
+              {/* Image section - aligned right on desktop */}
+              <div className="w-full lg:w-1/3 flex lg:justify-end lg:pr-0">
                 <img 
                   src="/lovable-uploads/eb280041-c9b0-4439-87b7-33752d951703.png"
                   alt="Giveaway prizes"
@@ -34,8 +34,8 @@ const Index = () => {
                 />
               </div>
               
-              {/* Widget section */}
-              <div className="w-full lg:w-2/3">
+              {/* Widget section - aligned left and overlapping */}
+              <div className="w-full lg:w-2/3 lg:-ml-5 z-10">
                 <div className="w-full min-h-[500px] p-4">
                   <a 
                     className="e-widget" 
