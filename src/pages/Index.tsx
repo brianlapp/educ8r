@@ -72,8 +72,22 @@ const Index = () => {
             />
           </div>
 
-          <div className="w-full md:w-1/2">
-            <a className="e-widget" href="https://gleam.io/dAUCD/instant-entry" rel="nofollow">
+          <div className="w-full md:w-1/2 min-w-[400px]">
+            <style>
+              {`
+                .gleam-widget-container .entry-method {
+                  display: block !important;
+                }
+                .gleam-widget-container .entry-button {
+                  display: none !important;
+                }
+              `}
+            </style>
+            <a 
+              className="e-widget" 
+              href="https://gleam.io/dAUCD/instant-entry?full=1" 
+              rel="nofollow"
+            >
               Instant Entry
             </a>
           </div>
