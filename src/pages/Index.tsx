@@ -14,6 +14,9 @@ const Index = () => {
     const savedUrl = localStorage.getItem("webhookUrl");
     if (savedUrl) {
       setWebhookUrl(savedUrl);
+      console.log("Webhook URL loaded from localStorage:", savedUrl);
+    } else {
+      console.warn("No webhook URL found in localStorage");
     }
 
     const script = document.createElement('script');
@@ -21,8 +24,10 @@ const Index = () => {
     script.async = true;
     
     window.addEventListener('message', async (event) => {
+      console.log("Message event received:", event.data);
+      
       if (event.data && event.data.gleam && event.data.gleam.type === 'campaign_entry') {
-        console.log("Gleam entry completed, triggering webhook");
+        console.log("Gleam entry detected:", event.data.gleam);
         
         try {
           const savedWebhookUrl = localStorage.getItem("webhookUrl");
@@ -30,6 +35,17 @@ const Index = () => {
             console.error("No webhook URL configured");
             return;
           }
+
+          console.log("Preparing webhook payload with data:", {
+            timestamp: new Date().toISOString(),
+            entry: event.data.gleam,
+            source: window.location.origin,
+            tags: ["freeparentsearch", "gleam-entry"],
+            user_data: {
+              ...event.data.gleam.participant,
+              entry_type: event.data.gleam.type
+            }
+          });
 
           // Send data to webhook with all necessary information
           const response = await fetch(savedWebhookUrl, {
@@ -50,7 +66,7 @@ const Index = () => {
             }),
           });
 
-          console.log("Webhook triggered, showing toast and redirecting");
+          console.log("Webhook request completed");
           
           toast({
             title: "Thank you for entering!",
@@ -59,12 +75,12 @@ const Index = () => {
 
           // Ensure redirect happens after toast
           setTimeout(() => {
-            console.log("Redirecting to thank you page...");
+            console.log("Attempting navigation to thank you page...");
             navigate("/thank-you");
           }, 2000);
           
         } catch (error) {
-          console.error("Error triggering webhook:", error);
+          console.error("Error in webhook flow:", error);
           toast({
             title: "Error",
             description: "There was an issue processing your entry.",
