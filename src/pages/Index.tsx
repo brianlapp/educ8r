@@ -91,7 +91,7 @@ const Index = () => {
         </div>
 
         {/* Gleam Form Container */}
-        <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg p-6">
+        <div className="w-full max-w-3xl bg-white rounded-lg p-6 bg-[#F6F6F7]">
           <a className="e-widget" href="https://gleam.io/dAUCD/instant-entry" rel="nofollow">
             Instant Entry
           </a>
