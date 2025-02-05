@@ -17,11 +17,7 @@ const Index = () => {
 
     // Listen for messages from Gleam
     const handleMessage = async (event: MessageEvent) => {
-      console.log("Message event received:", event.data);
-      
       if (event.data.gleam && event.data.gleam.type === "entry") {
-        console.log("Index: Gleam entry detected:", event.data.gleam);
-        
         try {
           // Forward the entry data to our webhook handler
           const { data, error } = await supabase.functions.invoke('webhook-handler', {
@@ -69,6 +65,7 @@ const Index = () => {
               alt="Find Your Parents Today"
               className="w-full h-auto rounded-lg shadow-lg object-cover"
               loading="eager"
+              fetchpriority="high"
             />
           </div>
 
