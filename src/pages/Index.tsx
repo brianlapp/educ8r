@@ -79,7 +79,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-[#F6F6F7]">
       <Navbar />
       
-      <main className="flex-grow p-4 md:p-8">
+      <main className="flex-grow p-4 md:p-8 mt-24">
         <div className="container mx-auto flex flex-col md:flex-row gap-8 items-start">
           {/* CTA Image */}
           <div className="w-full md:w-1/2">
