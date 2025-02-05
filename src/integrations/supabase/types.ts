@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      form_submissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          processed: boolean | null
+          submission_data: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          processed?: boolean | null
+          submission_data: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          processed?: boolean | null
+          submission_data?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       sweepstakes: {
         Row: {
           beehiiv_tag: string | null
@@ -177,6 +201,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      webhook_configs: {
+        Row: {
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          zapier_webhook_url: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          zapier_webhook_url: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          zapier_webhook_url?: string
+        }
+        Relationships: []
       }
       widget_versions: {
         Row: {

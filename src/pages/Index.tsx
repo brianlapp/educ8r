@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -21,15 +22,31 @@ const Index = () => {
       if (event.data.gleam && event.data.gleam.type === "entry") {
         console.log("Index: Gleam entry detected:", event.data.gleam);
         
-        toast({
-          title: "Success!",
-          description: "Your entry has been submitted successfully.",
-        });
+        try {
+          // Forward the entry data to our webhook handler
+          const { data, error } = await supabase.functions.invoke('webhook-handler', {
+            body: event.data.gleam
+          });
 
-        // Add a small delay before navigation to ensure the toast is visible
-        setTimeout(() => {
-          navigate("/thank-you");
-        }, 1000);
+          if (error) throw error;
+
+          toast({
+            title: "Success!",
+            description: "Your entry has been submitted successfully.",
+          });
+
+          // Add a small delay before navigation to ensure the toast is visible
+          setTimeout(() => {
+            navigate("/thank-you");
+          }, 1000);
+        } catch (error) {
+          console.error("Error forwarding entry:", error);
+          toast({
+            title: "Error",
+            description: "There was an error submitting your entry. Please try again.",
+            variant: "destructive"
+          });
+        }
       }
     };
 
