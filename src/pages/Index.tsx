@@ -73,12 +73,12 @@ const Index = () => {
       <Navbar />
       
       <main className="flex-grow p-4 md:p-8 mt-24">
-        <div className="container mx-auto flex flex-col md:flex-row gap-8 items-start">
+        <div className="container mx-auto flex flex-col md:flex-row gap-0 items-start">
           <div className="w-full md:w-1/2">
             <img
               src="/lovable-uploads/839373db-936e-48b2-9ab4-1e285fc982ed.png"
               alt="School Supplies Giveaway"
-              className="w-full h-auto rounded-lg shadow-lg object-cover"
+              className="w-full h-auto rounded-lg object-cover"
               loading="eager"
               fetchPriority="high"
             />
