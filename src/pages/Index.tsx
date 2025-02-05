@@ -11,6 +11,12 @@ const Index = () => {
   const [webhookUrl, setWebhookUrl] = useState("");
   
   useEffect(() => {
+    // Load webhook URL from localStorage
+    const savedUrl = localStorage.getItem("webhookUrl");
+    if (savedUrl) {
+      setWebhookUrl(savedUrl);
+    }
+
     const script = document.createElement('script');
     script.src = 'https://widget.gleamjs.io/e.js';
     script.async = true;
@@ -20,7 +26,13 @@ const Index = () => {
         console.log("Gleam entry completed, triggering webhook");
         
         try {
-          const response = await fetch(webhookUrl, {
+          const savedWebhookUrl = localStorage.getItem("webhookUrl");
+          if (!savedWebhookUrl) {
+            console.error("No webhook URL configured");
+            return;
+          }
+
+          const response = await fetch(savedWebhookUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -60,7 +72,7 @@ const Index = () => {
     return () => {
       document.body.removeChild(script);
     };
-  }, [webhookUrl, toast, navigate]);
+  }, [toast, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -68,17 +80,6 @@ const Index = () => {
       
       <main className="flex-grow w-full pt-28 pb-12 bg-gray-50">
         <div className="w-full max-w-7xl mx-auto px-4 lg:px-8">
-          {/* Temporarily hide webhook URL input until admin page is created */}
-          {/* <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Enter your Zapier webhook URL"
-              value={webhookUrl}
-              onChange={(e) => setWebhookUrl(e.target.value)}
-              className="w-full max-w-md px-4 py-2 border rounded-lg"
-            />
-          </div> */}
-          
           <div className="animate-fade-in">
             <div className="flex flex-col lg:flex-row items-center lg:items-start relative">
               <div className="w-full lg:w-1/3 flex lg:justify-end lg:pr-0">
