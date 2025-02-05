@@ -14,7 +14,9 @@ const Index = () => {
     const savedUrl = localStorage.getItem("webhookUrl");
     if (savedUrl) {
       setWebhookUrl(savedUrl);
-      console.log("Webhook URL loaded successfully");
+      console.log("Webhook URL loaded successfully:", savedUrl);
+    } else {
+      console.warn("No webhook URL found in localStorage");
     }
 
     const script = document.createElement('script');
@@ -30,6 +32,16 @@ const Index = () => {
         console.log("Gleam entry detected:", event.data.gleam);
         
         try {
+          if (!webhookUrl) {
+            console.error("No webhook URL configured");
+            toast({
+              title: "Configuration Error",
+              description: "No webhook URL configured. Please set up the webhook URL in the admin panel.",
+              variant: "destructive",
+            });
+            return;
+          }
+
           const webhookPayload = {
             timestamp: new Date().toISOString(),
             entry: event.data.gleam,
@@ -52,9 +64,14 @@ const Index = () => {
             body: JSON.stringify(webhookPayload),
           });
 
-          console.log("Webhook request completed");
+          console.log("Webhook request completed, navigating to thank you page");
           
-          // Immediately navigate to thank you page after successful form submission
+          toast({
+            title: "Success!",
+            description: "Your entry has been submitted successfully.",
+          });
+
+          // Navigate to thank you page
           navigate("/thank-you");
           
         } catch (error) {
