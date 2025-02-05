@@ -22,34 +22,69 @@ const Index = () => {
         console.log("Gleam event received:", event.data.gleam);
       }
 
+      // Check specifically for form submission events
       if (event.data.gleam?.type === "entry") {
         try {
           console.log("Processing entry data:", event.data.gleam);
           
-          // Forward the entry data to our webhook handler
-          const { data, error } = await supabase.functions.invoke('webhook-handler', {
-            body: {
-              ...event.data.gleam,
-              timestamp: new Date().toISOString()
-            }
-          });
+          // Get the webhook URL from our database
+          const { data: webhookConfig, error: webhookError } = await supabase
+            .from('webhook_configs')
+            .select('zapier_webhook_url')
+            .limit(1)
+            .single();
 
-          if (error) {
-            console.error("Webhook handler error:", error);
-            throw error;
+          if (webhookError) {
+            console.error("Error fetching webhook URL:", webhookError);
+            throw webhookError;
           }
 
-          console.log("Webhook handler response:", data);
+          if (!webhookConfig?.zapier_webhook_url) {
+            throw new Error('No Zapier webhook URL configured');
+          }
+
+          // Forward the entry data to Zapier
+          console.log("Sending data to Zapier webhook:", webhookConfig.zapier_webhook_url);
+          const zapierResponse = await fetch(webhookConfig.zapier_webhook_url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            mode: 'no-cors',
+            body: JSON.stringify({
+              ...event.data.gleam,
+              timestamp: new Date().toISOString()
+            }),
+          });
+
+          console.log("Zapier webhook response received");
+
+          // Store the submission in our database
+          const { error: submissionError } = await supabase
+            .from('form_submissions')
+            .insert([
+              {
+                submission_data: event.data.gleam,
+                processed: true
+              }
+            ]);
+
+          if (submissionError) {
+            console.error("Error storing submission:", submissionError);
+            throw submissionError;
+          }
 
           toast({
             title: "Success!",
             description: "Your entry has been submitted successfully.",
           });
 
-          // Add a small delay before navigation to ensure the toast is visible
+          // Force navigation to thank you page after a short delay
           setTimeout(() => {
-            navigate("/thank-you");
+            console.log("Navigating to thank you page");
+            navigate("/thank-you", { replace: true });
           }, 1000);
+
         } catch (error) {
           console.error("Error processing entry:", error);
           toast({
