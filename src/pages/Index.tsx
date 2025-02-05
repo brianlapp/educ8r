@@ -1,37 +1,32 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { useEffect, useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [webhookUrl, setWebhookUrl] = useState("");
-  
+
   useEffect(() => {
     // Load webhook URL from localStorage
     const savedUrl = localStorage.getItem("webhookUrl");
-    if (!savedUrl) {
-      console.warn("No webhook URL found in localStorage - redirecting to admin");
-      toast({
-        title: "Setup Required",
-        description: "Please configure the webhook URL in the admin panel first.",
-      });
-      navigate("/admin");
-      return;
+    if (savedUrl) {
+      setWebhookUrl(savedUrl);
+      console.log("Webhook URL loaded successfully");
     }
-    setWebhookUrl(savedUrl);
-    console.log("Webhook URL loaded successfully");
 
     const script = document.createElement('script');
     script.src = 'https://widget.gleamjs.io/e.js';
     script.async = true;
-    
-    window.addEventListener('message', async (event) => {
+    document.body.appendChild(script);
+
+    // Listen for messages from Gleam
+    const handleMessage = async (event: MessageEvent) => {
       console.log("Message event received:", event.data);
-      
-      if (event.data && event.data.gleam && event.data.gleam.type === 'campaign_entry') {
+
+      if (event.data.gleam && event.data.gleam.type === "entry") {
         console.log("Gleam entry detected:", event.data.gleam);
         
         try {
@@ -48,7 +43,7 @@ const Index = () => {
 
           console.log("Sending webhook payload:", webhookPayload);
 
-          const response = await fetch(savedUrl, {
+          const response = await fetch(webhookUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -60,7 +55,7 @@ const Index = () => {
           console.log("Webhook request completed");
           
           toast({
-            title: "Thank you for entering!",
+            title: "Entry Submitted",
             description: "You will be redirected shortly...",
           });
 
@@ -78,44 +73,26 @@ const Index = () => {
           });
         }
       }
-    });
-    
-    document.body.appendChild(script);
-    
+    };
+
+    window.addEventListener("message", handleMessage);
     return () => {
+      window.removeEventListener("message", handleMessage);
       document.body.removeChild(script);
     };
-  }, [toast, navigate]);
+  }, [navigate, toast, webhookUrl]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow w-full pt-28 pb-12 bg-gray-50">
-        <div className="w-full max-w-7xl mx-auto px-4 lg:px-8">
-          <div className="animate-fade-in">
-            <div className="flex flex-col lg:flex-row items-center lg:items-start relative">
-              <div className="w-full lg:w-1/3 flex lg:justify-end lg:pr-0">
-                <img 
-                  src="/lovable-uploads/eb280041-c9b0-4439-87b7-33752d951703.png"
-                  alt="Giveaway prizes"
-                  className="max-w-[300px] lg:max-w-full w-full object-contain rounded-lg"
-                />
-              </div>
-              
-              <div className="w-full lg:w-2/3 lg:-ml-5 z-10">
-                <div className="w-full min-h-[500px] p-4">
-                  <a 
-                    className="e-widget" 
-                    href="https://gleam.io/dAUCD/instant-entry" 
-                    rel="nofollow"
-                  >
-                    Instant Entry
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
+      <main className="flex-grow flex items-center justify-center p-4">
+        <div className="w-full max-w-3xl">
+          <div 
+            className="e-gleam" 
+            data-campaign="dAUCD"
+            data-responsive="true"
+          />
         </div>
       </main>
 
