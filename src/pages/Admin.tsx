@@ -9,15 +9,35 @@ const Admin = () => {
   const [webhookUrl, setWebhookUrl] = useState("");
 
   useEffect(() => {
-    // Load webhook URL from localStorage if it exists
-    const savedUrl = localStorage.getItem("webhookUrl");
-    if (savedUrl) {
-      setWebhookUrl(savedUrl);
+    // Try to load webhook URL from multiple storage locations
+    const localStorageUrl = localStorage.getItem("webhookUrl");
+    const sessionStorageUrl = sessionStorage.getItem("webhookUrl");
+    
+    if (localStorageUrl || sessionStorageUrl) {
+      const savedUrl = localStorageUrl || sessionStorageUrl;
+      setWebhookUrl(savedUrl || "");
+      
+      // Ensure URL is saved in both storage locations
+      if (localStorageUrl && !sessionStorageUrl) {
+        sessionStorage.setItem("webhookUrl", localStorageUrl);
+      } else if (!localStorageUrl && sessionStorageUrl) {
+        localStorage.setItem("webhookUrl", sessionStorageUrl);
+      }
+      
       console.log("Admin: Loaded existing webhook URL:", savedUrl);
     } else {
-      console.log("Admin: No webhook URL found in localStorage");
+      console.log("Admin: No webhook URL found in storage");
     }
   }, []);
+
+  const validateUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   const handleSave = () => {
     if (!webhookUrl.trim()) {
@@ -29,14 +49,36 @@ const Admin = () => {
       return;
     }
 
+    if (!validateUrl(webhookUrl)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid URL format",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const trimmedUrl = webhookUrl.trim();
+      
+      // Save to both storage locations
       localStorage.setItem("webhookUrl", trimmedUrl);
+      sessionStorage.setItem("webhookUrl", trimmedUrl);
+      
       console.log("Admin: Successfully saved webhook URL:", trimmedUrl);
-      toast({
-        title: "Settings saved",
-        description: "Your webhook URL has been saved successfully.",
-      });
+      
+      // Verify the save was successful
+      const savedLocal = localStorage.getItem("webhookUrl");
+      const savedSession = sessionStorage.getItem("webhookUrl");
+      
+      if (savedLocal === trimmedUrl && savedSession === trimmedUrl) {
+        toast({
+          title: "Settings saved",
+          description: "Your webhook URL has been saved successfully.",
+        });
+      } else {
+        throw new Error("Verification failed");
+      }
     } catch (error) {
       console.error("Error saving webhook URL:", error);
       toast({
@@ -63,7 +105,7 @@ const Admin = () => {
                 </label>
                 <Input
                   id="webhookUrl"
-                  type="text"
+                  type="url"
                   placeholder="Enter your Zapier webhook URL"
                   value={webhookUrl}
                   onChange={(e) => setWebhookUrl(e.target.value)}
