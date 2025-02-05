@@ -10,13 +10,16 @@ const Index = () => {
   const [webhookUrl, setWebhookUrl] = useState("");
 
   useEffect(() => {
-    // Load webhook URL from localStorage
-    const savedUrl = localStorage.getItem("webhookUrl");
-    if (savedUrl) {
-      setWebhookUrl(savedUrl);
+    // Load webhook URL from both storage locations
+    const localStorageUrl = localStorage.getItem("webhookUrl");
+    const sessionStorageUrl = sessionStorage.getItem("webhookUrl");
+    
+    if (localStorageUrl || sessionStorageUrl) {
+      const savedUrl = localStorageUrl || sessionStorageUrl;
+      setWebhookUrl(savedUrl || "");
       console.log("Index: Webhook URL loaded successfully:", savedUrl);
     } else {
-      console.warn("Index: No webhook URL found in localStorage");
+      console.warn("Index: No webhook URL found in storage");
       toast({
         title: "Warning",
         description: "No webhook URL configured. Please set up the webhook URL in the admin panel.",
@@ -31,6 +34,8 @@ const Index = () => {
 
     // Listen for messages from Gleam
     const handleMessage = async (event: MessageEvent) => {
+      console.log("Message event received:", event.data);
+      
       if (event.data.gleam && event.data.gleam.type === "entry") {
         console.log("Index: Gleam entry detected:", event.data.gleam);
         
@@ -74,8 +79,10 @@ const Index = () => {
             description: "Your entry has been submitted successfully.",
           });
 
-          // Navigate to thank you page
-          navigate("/thank-you");
+          // Add a small delay before navigation to ensure the toast is visible
+          setTimeout(() => {
+            navigate("/thank-you");
+          }, 1000);
           
         } catch (error) {
           console.error("Index: Error in webhook flow:", error);
@@ -101,7 +108,6 @@ const Index = () => {
       
       <main className="flex-grow p-4 md:p-8 mt-24">
         <div className="container mx-auto flex flex-col md:flex-row gap-8 items-start">
-          {/* CTA Image */}
           <div className="w-full md:w-1/2">
             <img
               src="https://www.sj-r.com/gcdn/authoring/2009/07/27/NSJR/ghows-LS-a101f2fe-bb31-420b-a876-e2a90c5ada65-2c869b53.jpeg?width=1320&height=954&fit=crop&format=pjpg&auto=webp"
@@ -111,7 +117,6 @@ const Index = () => {
             />
           </div>
 
-          {/* Gleam Form Container */}
           <div className="w-full md:w-1/2">
             <a className="e-widget" href="https://gleam.io/dAUCD/instant-entry" rel="nofollow">
               Instant Entry
