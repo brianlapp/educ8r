@@ -83,7 +83,7 @@ const Index = () => {
         {/* CTA Image */}
         <div className="w-full max-w-2xl mb-8">
           <img
-            src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"
+            src="https://www.sj-r.com/gcdn/authoring/2009/07/27/NSJR/ghows-LS-a101f2fe-bb31-420b-a876-e2a90c5ada65-2c869b53.jpeg?width=1320&height=954&fit=crop&format=pjpg&auto=webp"
             alt="Find Your Parents Today"
             className="w-full h-auto rounded-lg shadow-lg"
             loading="eager"
