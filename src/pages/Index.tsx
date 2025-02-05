@@ -74,7 +74,7 @@ const Index = () => {
       
       <main className="flex-grow p-4 md:p-8 mt-24">
         <div className="container mx-auto flex flex-col md:flex-row gap-0 items-start">
-          <div className="w-full md:w-1/2">
+          <div className="w-full md:w-3/5">
             <img
               src="/lovable-uploads/839373db-936e-48b2-9ab4-1e285fc982ed.png"
               alt="School Supplies Giveaway"
@@ -84,7 +84,7 @@ const Index = () => {
             />
           </div>
 
-          <div className="w-full md:w-1/2 min-w-[400px]">
+          <div className="w-full md:w-2/5 min-w-[400px]">
             <style>
               {`
                 .gleam-widget-container .entry-method {
