@@ -79,8 +79,19 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-grow flex items-center justify-center p-4">
-        <div className="w-full max-w-3xl">
+      <main className="flex-grow flex flex-col items-center justify-center p-4 space-y-8">
+        {/* CTA Image */}
+        <div className="w-full max-w-2xl mb-8">
+          <img
+            src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"
+            alt="Find Your Parents Today"
+            className="w-full h-auto rounded-lg shadow-lg"
+            loading="eager"
+          />
+        </div>
+
+        {/* Gleam Form Container */}
+        <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg p-6">
           <div 
             className="e-gleam" 
             data-campaign="dAUCD"
