@@ -76,8 +76,8 @@ const Index = () => {
         <div className="container mx-auto flex flex-col md:flex-row gap-8 items-start">
           <div className="w-full md:w-1/2">
             <img
-              src="https://www.sj-r.com/gcdn/authoring/2009/07/27/NSJR/ghows-LS-a101f2fe-bb31-420b-a876-e2a90c5ada65-2c869b53.jpeg?width=1320&height=954&fit=crop&format=pjpg&auto=webp"
-              alt="Find Your Parents Today"
+              src="/lovable-uploads/839373db-936e-48b2-9ab4-1e285fc982ed.png"
+              alt="School Supplies Giveaway"
               className="w-full h-auto rounded-lg shadow-lg object-cover"
               loading="eager"
               fetchPriority="high"
