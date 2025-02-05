@@ -76,7 +76,7 @@ const Index = () => {
   }, [navigate, toast, webhookUrl]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#F6F6F7]">
       <Navbar />
       
       <main className="flex-grow flex flex-col items-center justify-center p-4 space-y-8">
@@ -91,7 +91,7 @@ const Index = () => {
         </div>
 
         {/* Gleam Form Container */}
-        <div className="w-full max-w-3xl bg-white rounded-lg p-6 bg-[#F6F6F7]">
+        <div className="w-full max-w-3xl rounded-lg p-6">
           <a className="e-widget" href="https://gleam.io/dAUCD/instant-entry" rel="nofollow">
             Instant Entry
           </a>
