@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useState, useEffect } from "react";
@@ -13,15 +12,35 @@ const Admin = () => {
     const savedUrl = localStorage.getItem("webhookUrl");
     if (savedUrl) {
       setWebhookUrl(savedUrl);
+      console.log("Admin: Loaded existing webhook URL:", savedUrl);
     }
   }, []);
 
   const handleSave = () => {
-    localStorage.setItem("webhookUrl", webhookUrl);
-    toast({
-      title: "Settings saved",
-      description: "Your webhook URL has been saved successfully.",
-    });
+    if (!webhookUrl.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid webhook URL",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      localStorage.setItem("webhookUrl", webhookUrl.trim());
+      console.log("Admin: Saved webhook URL:", webhookUrl);
+      toast({
+        title: "Settings saved",
+        description: "Your webhook URL has been saved successfully.",
+      });
+    } catch (error) {
+      console.error("Error saving webhook URL:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save webhook URL. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
