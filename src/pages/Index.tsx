@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -10,24 +11,37 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log("Setting up Gleam integration and event listeners...");
+    
     const script = document.createElement('script');
     script.src = 'https://widget.gleamjs.io/e.js';
     script.async = true;
     document.body.appendChild(script);
 
-    // Listen for messages from Gleam
+    // Listen for ALL messages
     const handleMessage = async (event: MessageEvent) => {
-      // Log all Gleam events for debugging
+      console.log("=== Message Event Received ===");
+      console.log("Raw event:", event);
+      console.log("Event origin:", event.origin);
+      console.log("Event data:", event.data);
+      
       if (event.data.gleam) {
-        console.log("Gleam event received:", event.data.gleam);
+        console.log("Gleam event details:", {
+          type: event.data.gleam.type,
+          campaign: event.data.gleam.campaign,
+          contestant: event.data.gleam.contestant
+        });
       }
 
-      // Check specifically for form submission events
+      // Check for form submission events
       if (event.data.gleam?.type === "entry") {
+        console.log("Entry event detected! Attempting to process...");
+        
         try {
           console.log("Processing entry data:", event.data.gleam);
           
           // Get the webhook URL from our database
+          console.log("Fetching webhook URL...");
           const { data: webhookConfig, error: webhookError } = await supabase
             .from('webhook_configs')
             .select('zapier_webhook_url')
@@ -40,6 +54,7 @@ const Index = () => {
           }
 
           if (!webhookConfig?.zapier_webhook_url) {
+            console.error('No Zapier webhook URL found in config');
             throw new Error('No Zapier webhook URL configured');
           }
 
@@ -57,9 +72,10 @@ const Index = () => {
             }),
           });
 
-          console.log("Zapier webhook response received");
+          console.log("Zapier webhook request completed");
 
           // Store the submission in our database
+          console.log("Storing submission in database...");
           const { error: submissionError } = await supabase
             .from('form_submissions')
             .insert([
@@ -74,14 +90,16 @@ const Index = () => {
             throw submissionError;
           }
 
+          console.log("Submission stored successfully");
           toast({
             title: "Success!",
             description: "Your entry has been submitted successfully.",
           });
 
           // Force navigation to thank you page after a short delay
+          console.log("Attempting navigation to thank you page...");
           setTimeout(() => {
-            console.log("Navigating to thank you page");
+            console.log("Executing navigation...");
             navigate("/thank-you", { replace: true });
           }, 1000);
 
@@ -96,8 +114,11 @@ const Index = () => {
       }
     };
 
+    console.log("Adding message event listener...");
     window.addEventListener("message", handleMessage);
+    
     return () => {
+      console.log("Cleaning up Gleam integration...");
       window.removeEventListener("message", handleMessage);
       document.body.removeChild(script);
     };
