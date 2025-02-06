@@ -29,7 +29,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-[#F6F6F7]">
       <Navbar />
       
-      <main className="flex-grow p-4 md:p-8 mt-24">
+      <main className="flex-grow p-3 md:p-6 mt-16"> {/* Reduced padding and margin-top */}
         <div className="container mx-auto flex flex-col md:flex-row gap-0 items-start">
           <div className="w-full md:w-3/5">
             <img
@@ -41,7 +41,7 @@ const Index = () => {
             />
           </div>
 
-          <div className="w-full md:w-2/5 min-w-[400px]">
+          <div className="w-full md:w-2/5 min-w-[320px]"> {/* Reduced min-width */}
             <div id="88241-zok3fc2t" className="sw_container"></div>
           </div>
         </div>
