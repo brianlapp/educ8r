@@ -11,23 +11,32 @@ export type Database = {
     Tables: {
       form_submissions: {
         Row: {
+          beehiiv_id: string | null
           created_at: string | null
           id: string
           processed: boolean | null
+          referral_code: string | null
+          referral_url: string | null
           submission_data: Json
           updated_at: string | null
         }
         Insert: {
+          beehiiv_id?: string | null
           created_at?: string | null
           id?: string
           processed?: boolean | null
+          referral_code?: string | null
+          referral_url?: string | null
           submission_data: Json
           updated_at?: string | null
         }
         Update: {
+          beehiiv_id?: string | null
           created_at?: string | null
           id?: string
           processed?: boolean | null
+          referral_code?: string | null
+          referral_url?: string | null
           submission_data?: Json
           updated_at?: string | null
         }
