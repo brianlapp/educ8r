@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -7,17 +8,14 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Get the request body
     const body = await req.json()
     console.log('Received webhook data:', JSON.stringify(body, null, 2))
 
-    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -42,6 +40,56 @@ serve(async (req) => {
     }
 
     console.log('Submission stored successfully:', submissionData)
+
+    // Send data to Beehiiv
+    const beehiivApiKey = Deno.env.get('BEEHIIV_API_KEY')
+    if (!beehiivApiKey) {
+      throw new Error('Beehiiv API key not configured')
+    }
+
+    console.log('Sending data to Beehiiv...')
+    const beehiivResponse = await fetch('https://api.beehiiv.com/v2/subscribers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${beehiivApiKey}`,
+      },
+      body: JSON.stringify({
+        email: body.email,
+        reactivate_existing: true,
+        send_welcome_email: true,
+        utm_source: 'sweepwidget',
+        utm_campaign: 'giveaway',
+        referral_code: body.referral_code || null,
+        custom_fields: {
+          first_name: body.first_name,
+          last_name: body.last_name,
+        }
+      }),
+    })
+
+    if (!beehiivResponse.ok) {
+      const beehiivError = await beehiivResponse.text()
+      console.error('Beehiiv response not OK:', beehiivError)
+      throw new Error(`Failed to send to Beehiiv: ${beehiivError}`)
+    }
+
+    const beehiivData = await beehiivResponse.json()
+    console.log('Successfully sent to Beehiiv:', beehiivData)
+
+    // Update the submission with Beehiiv ID
+    const { error: updateError } = await supabaseClient
+      .from('form_submissions')
+      .update({ 
+        beehiiv_id: beehiivData.id,
+        processed: true 
+      })
+      .eq('id', submissionData.id)
+
+    if (updateError) {
+      console.error('Error updating submission with Beehiiv ID:', updateError)
+      throw updateError
+    }
 
     // Get the Zapier webhook URL from the database
     console.log('Fetching Zapier webhook URL...')
@@ -76,19 +124,6 @@ serve(async (req) => {
     }
 
     console.log('Successfully forwarded to Zapier')
-
-    // Update the submission as processed
-    const { error: updateError } = await supabaseClient
-      .from('form_submissions')
-      .update({ processed: true })
-      .eq('id', submissionData.id)
-
-    if (updateError) {
-      console.error('Error updating submission status:', updateError)
-      throw updateError
-    }
-
-    console.log('Submission marked as processed')
 
     return new Response(
       JSON.stringify({ success: true }),
