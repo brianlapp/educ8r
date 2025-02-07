@@ -2,16 +2,15 @@
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { MessageSquare, Facebook, Mail, Twitter, Link2, ChevronDown } from "lucide-react";
+import { Link2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
 const ThankYou = () => {
   const { toast } = useToast();
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const [isShareExpanded, setIsShareExpanded] = useState(false);
   const referrerUrl = "https://example.com/partner-page"; // Placeholder URL
-  const emailTemplate = `Hey! I thought you might be interested in checking this out: ${referrerUrl}. It's pretty cool!`;
+  const emailTemplate = `Subject: Check out this amazing opportunity!\n\nHey! I thought you might be interested in checking this out: ${referrerUrl}. It's pretty cool!`;
 
   const handleCopyLink = async () => {
     try {
@@ -66,95 +65,60 @@ const ThankYou = () => {
       
       <main className="flex-grow w-full pt-16 pb-12 bg-gray-50">
         <div className="w-full max-w-2xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Earn More Entries</h1>
-            <p className="text-lg text-gray-600">
-              Increase your chance of winning by sharing your unique link, getting your friends to sign up, and taking the actions below!
-            </p>
-          </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">Share This Page</h1>
 
-          <div className="space-y-3">
-            {/* Share on Facebook */}
-            <button
-              onClick={() => shareOnSocial("facebook")}
-              className="w-full px-6 py-4 bg-white rounded-lg shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <Facebook className="w-5 h-5 text-[#1877F2]" />
-                <span className="font-medium text-gray-900">Share this on Facebook</span>
-              </div>
-              <span className="text-pink-500 font-medium">+3</span>
-            </button>
-
-            {/* Share on Twitter */}
-            <button
-              onClick={() => shareOnSocial("twitter")}
-              className="w-full px-6 py-4 bg-white rounded-lg shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <Twitter className="w-5 h-5 text-[#1DA1F2]" />
-                <span className="font-medium text-gray-900">Share this on Twitter</span>
-              </div>
-              <span className="text-pink-500 font-medium">+3</span>
-            </button>
-
-            {/* Email to a Friend Section */}
-            <div className="bg-white rounded-lg shadow-sm">
+          <div className="space-y-6">
+            {/* Social Sharing Buttons */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
-                onClick={() => setIsShareExpanded(!isShareExpanded)}
-                className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                onClick={() => shareOnSocial("facebook")}
+                className="w-full bg-[#1877F2] text-white py-4 rounded-lg font-semibold text-center hover:bg-[#1877F2]/90 transition-colors"
               >
-                <div className="flex items-center gap-4">
-                  <Mail className="w-5 h-5 text-gray-600" />
-                  <span className="font-medium text-gray-900">Email to a Friend</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-pink-500 font-medium">+3</span>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isShareExpanded ? 'rotate-180' : ''}`} />
-                </div>
+                SHARE
               </button>
-              
-              {isShareExpanded && (
-                <div className="px-6 py-4 border-t border-gray-100">
-                  <div className="space-y-3">
-                    <p className="text-sm text-gray-600">Copy this template and send it to your friends:</p>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <p className="text-sm text-gray-600">{emailTemplate}</p>
-                    </div>
-                    <Button
-                      onClick={handleCopyEmail}
-                      size="sm"
-                      className="w-full"
-                    >
-                      Copy Email Template
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <button
+                onClick={() => shareOnSocial("twitter")}
+                className="w-full bg-[#1DA1F2] text-white py-4 rounded-lg font-semibold text-center hover:bg-[#1DA1F2]/90 transition-colors"
+              >
+                TWEET
+              </button>
             </div>
 
-            {/* Share Link */}
-            <div className="bg-white rounded-lg shadow-sm">
-              <div className="px-6 py-4">
-                <div className="flex items-center gap-4 mb-3">
-                  <Link2 className="w-5 h-5 text-gray-600" />
-                  <span className="font-medium text-gray-900">Share via Link</span>
+            {/* Direct Link Section */}
+            <div className="space-y-2">
+              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Direct Link</h2>
+              <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-3">
+                <input
+                  type="text"
+                  value={referrerUrl}
+                  readOnly
+                  className="flex-grow bg-transparent border-none text-sm text-gray-600 focus:outline-none"
+                />
+                <Button
+                  onClick={handleCopyLink}
+                  variant="secondary"
+                  size="sm"
+                  className="shrink-0"
+                >
+                  {isLinkCopied ? "Copied!" : "Copy"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Email Section */}
+            <div className="space-y-2">
+              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Email A Friend</h2>
+              <div className="bg-gray-100 rounded-lg p-4 space-y-4">
+                <div className="text-sm text-gray-600 whitespace-pre-line">
+                  {emailTemplate}
                 </div>
-                <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-2">
-                  <input
-                    type="text"
-                    value={referrerUrl}
-                    readOnly
-                    className="flex-grow bg-transparent border-none text-sm text-gray-600 focus:outline-none"
-                  />
-                  <Button
-                    onClick={handleCopyLink}
-                    size="sm"
-                    className="shrink-0"
-                  >
-                    {isLinkCopied ? "Copied!" : "Copy"}
-                  </Button>
-                </div>
+                <Button
+                  onClick={handleCopyEmail}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  Copy Email Template
+                </Button>
               </div>
             </div>
           </div>
