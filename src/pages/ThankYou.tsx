@@ -74,13 +74,13 @@ const ThankYou = () => {
                 onClick={() => shareOnSocial("facebook")}
                 className="w-full bg-[#1877F2] text-white py-4 rounded-lg font-semibold text-center hover:bg-[#1877F2]/90 transition-colors"
               >
-                SHARE
+                Share this on Facebook
               </button>
               <button
                 onClick={() => shareOnSocial("twitter")}
                 className="w-full bg-[#1DA1F2] text-white py-4 rounded-lg font-semibold text-center hover:bg-[#1DA1F2]/90 transition-colors"
               >
-                TWEET
+                Share this on Twitter
               </button>
             </div>
 
