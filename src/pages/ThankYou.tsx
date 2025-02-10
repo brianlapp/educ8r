@@ -1,18 +1,31 @@
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Link2, Mail, Facebook, Twitter, Linkedin, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "react-router-dom";
 
 const ThankYou = () => {
   const { toast } = useToast();
   const [isLinkCopied, setIsLinkCopied] = useState(false);
+  const [isTemplateCopied, setIsTemplateCopied] = useState(false);
   const [referralUrl, setReferralUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
+
+  const emailTemplate = `Hey! 
+
+I just entered an amazing giveaway and thought you might be interested too! 
+
+You can enter here: ${referralUrl}
+
+Hope you'll join in!
+
+Best regards`;
 
   useEffect(() => {
     const initializePage = async () => {
@@ -74,6 +87,24 @@ const ThankYou = () => {
     }
   };
 
+  const handleCopyTemplate = async () => {
+    try {
+      await navigator.clipboard.writeText(emailTemplate);
+      setIsTemplateCopied(true);
+      toast({
+        title: "Template copied!",
+        description: "The email template has been copied to your clipboard.",
+      });
+      setTimeout(() => setIsTemplateCopied(false), 2000);
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Please try copying the template manually.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleShare = (platform: string) => {
     let url = '';
     const text = "Join this amazing giveaway!";
@@ -93,8 +124,7 @@ const ThankYou = () => {
         break;
       case 'email':
         const subject = "Check out this giveaway!";
-        const body = `Hey! I thought you might be interested in this: ${referralUrl}`;
-        url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailTemplate)}`;
         break;
     }
     
@@ -124,69 +154,90 @@ const ThankYou = () => {
           </div>
 
           {referralUrl && (
-            <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Share Your Unique Link</h2>
-              <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-3 mb-6">
-                <input
-                  type="text"
-                  value={referralUrl}
-                  readOnly
-                  className="flex-grow bg-transparent border-none text-sm text-gray-600 focus:outline-none"
-                />
-                <Button
-                  onClick={handleCopyLink}
-                  variant="secondary"
-                  size="sm"
-                  className="shrink-0"
-                >
-                  <Link2 className="h-4 w-4 mr-2" />
-                  {isLinkCopied ? "Copied!" : "Copy"}
-                </Button>
+            <>
+              <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Share Your Unique Link</h2>
+                <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-3 mb-6">
+                  <input
+                    type="text"
+                    value={referralUrl}
+                    readOnly
+                    className="flex-grow bg-transparent border-none text-sm text-gray-600 focus:outline-none"
+                  />
+                  <Button
+                    onClick={handleCopyLink}
+                    variant="secondary"
+                    size="sm"
+                    className="shrink-0"
+                  >
+                    <Link2 className="h-4 w-4 mr-2" />
+                    {isLinkCopied ? "Copied!" : "Copy"}
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <Button
+                    onClick={() => handleShare('facebook')}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Facebook className="h-5 w-5 mr-2" />
+                    Facebook
+                  </Button>
+                  <Button
+                    onClick={() => handleShare('twitter')}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Twitter className="h-5 w-5 mr-2" />
+                    Twitter
+                  </Button>
+                  <Button
+                    onClick={() => handleShare('linkedin')}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Linkedin className="h-5 w-5 mr-2" />
+                    LinkedIn
+                  </Button>
+                  <Button
+                    onClick={() => handleShare('whatsapp')}
+                    variant="outline"
+                    className="w-full text-green-600 hover:text-green-700"
+                  >
+                    <MessageCircle className="h-5 w-5 mr-2" />
+                    WhatsApp
+                  </Button>
+                  <Button
+                    onClick={() => handleShare('email')}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Mail className="h-5 w-5 mr-2" />
+                    Email
+                  </Button>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <Button
-                  onClick={() => handleShare('facebook')}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Facebook className="h-5 w-5 mr-2" />
-                  Facebook
-                </Button>
-                <Button
-                  onClick={() => handleShare('twitter')}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Twitter className="h-5 w-5 mr-2" />
-                  Twitter
-                </Button>
-                <Button
-                  onClick={() => handleShare('linkedin')}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Linkedin className="h-5 w-5 mr-2" />
-                  LinkedIn
-                </Button>
-                <Button
-                  onClick={() => handleShare('whatsapp')}
-                  variant="outline"
-                  className="w-full text-green-600 hover:text-green-700"
-                >
-                  <MessageCircle className="h-5 w-5 mr-2" />
-                  WhatsApp
-                </Button>
-                <Button
-                  onClick={() => handleShare('email')}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Mail className="h-5 w-5 mr-2" />
-                  Email
-                </Button>
+              <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Email Template</h2>
+                <p className="text-sm text-gray-600 mb-4">Use this template to share with your friends via email:</p>
+                <div className="space-y-4">
+                  <Textarea
+                    value={emailTemplate}
+                    readOnly
+                    className="min-h-[200px] text-gray-600"
+                  />
+                  <Button
+                    onClick={handleCopyTemplate}
+                    className="w-full md:w-auto"
+                  >
+                    <Link2 className="h-4 w-4 mr-2" />
+                    {isTemplateCopied ? "Template Copied!" : "Copy Template"}
+                  </Button>
+                </div>
               </div>
-            </div>
+            </>
           )}
 
           <div className="bg-blue-50 rounded-xl p-6">
