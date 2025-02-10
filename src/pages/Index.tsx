@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -239,9 +238,9 @@ const Index = () => {
         <section className="py-12 bg-[#F1F1F1]">
           <div className="container mx-auto px-3">
             <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <CardHeader className="text-center pb-4">
-                <h2 className="text-4xl md:text-5xl font-bold text-black mb-2">Time Left to Enter!</h2>
-                <div className="flex justify-center space-x-4 text-center mt-4">
+              <CardHeader className="text-center pb-8">
+                <h2 className="text-4xl md:text-5xl font-bold text-black mb-8 mt-4">Time Left to Enter!</h2>
+                <div className="flex justify-center space-x-4 text-center mt-8">
                   <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
                     <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.days}</div>
                     <div className="text-sm text-[#15b0f8]">Days</div>
