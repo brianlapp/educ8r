@@ -25,15 +25,17 @@ const ThankYou = () => {
       
       if (email && sweepstakesId) {
         try {
-          // Fetch current entry count and user data
+          // Fetch current entry count and user data - using maybeSingle() instead of single()
           const { data: entryData, error: entryError } = await supabase
             .from('sweepstakes_entries')
             .select('entry_count, referral_count, first_name, last_name')
             .eq('email', email)
             .eq('sweepstakes_id', sweepstakesId)
-            .single();
+            .maybeSingle();
 
           if (entryError) throw entryError;
+          
+          // Only proceed with PAP API call if we found an entry
           if (entryData) {
             setEntryCount(entryData.entry_count);
 
@@ -50,6 +52,13 @@ const ThankYou = () => {
             if (papData?.referralUrl) {
               setReferralUrl(papData.referralUrl);
             }
+          } else {
+            // Handle case where no entry was found
+            toast({
+              title: "Entry Not Found",
+              description: "We couldn't find your sweepstakes entry. Please try entering again.",
+              variant: "destructive",
+            });
           }
         } catch (err) {
           console.error('Error initializing thank you page:', err);
@@ -63,6 +72,11 @@ const ThankYou = () => {
         }
       } else {
         console.warn('Missing required parameters:', { email, sweepstakesId });
+        toast({
+          title: "Missing Information",
+          description: "Required information is missing from the URL.",
+          variant: "destructive",
+        });
         setIsLoading(false);
       }
     };
@@ -137,69 +151,71 @@ const ThankYou = () => {
             <p className="text-lg text-gray-600 mb-6">Want to increase your chances of winning? Share with friends to earn extra entries!</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Share Your Unique Link</h2>
-            <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-3 mb-6">
-              <input
-                type="text"
-                value={referralUrl}
-                readOnly
-                className="flex-grow bg-transparent border-none text-sm text-gray-600 focus:outline-none"
-              />
-              <Button
-                onClick={handleCopyLink}
-                variant="secondary"
-                size="sm"
-                className="shrink-0"
-              >
-                <Link2 className="h-4 w-4 mr-2" />
-                {isLinkCopied ? "Copied!" : "Copy"}
-              </Button>
-            </div>
+          {referralUrl && (
+            <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Share Your Unique Link</h2>
+              <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-3 mb-6">
+                <input
+                  type="text"
+                  value={referralUrl}
+                  readOnly
+                  className="flex-grow bg-transparent border-none text-sm text-gray-600 focus:outline-none"
+                />
+                <Button
+                  onClick={handleCopyLink}
+                  variant="secondary"
+                  size="sm"
+                  className="shrink-0"
+                >
+                  <Link2 className="h-4 w-4 mr-2" />
+                  {isLinkCopied ? "Copied!" : "Copy"}
+                </Button>
+              </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <Button
-                onClick={() => handleShare('facebook')}
-                variant="outline"
-                className="w-full"
-              >
-                <Facebook className="h-5 w-5 mr-2" />
-                Facebook
-              </Button>
-              <Button
-                onClick={() => handleShare('twitter')}
-                variant="outline"
-                className="w-full"
-              >
-                <Twitter className="h-5 w-5 mr-2" />
-                Twitter
-              </Button>
-              <Button
-                onClick={() => handleShare('linkedin')}
-                variant="outline"
-                className="w-full"
-              >
-                <Linkedin className="h-5 w-5 mr-2" />
-                LinkedIn
-              </Button>
-              <Button
-                onClick={() => handleShare('whatsapp')}
-                variant="outline"
-                className="w-full text-green-600 hover:text-green-700"
-              >
-                <MessageCircle className="h-5 w-5 mr-2" />
-                WhatsApp
-              </Button>
-              <Button
-                onClick={() => handleShare('email')}
-                variant="outline"
-                className="w-full"
-              >
-                <Mail className="h-5 w-5 mr-2" />
-                Email
-              </Button>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <Button
+                  onClick={() => handleShare('facebook')}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Facebook className="h-5 w-5 mr-2" />
+                  Facebook
+                </Button>
+                <Button
+                  onClick={() => handleShare('twitter')}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Twitter className="h-5 w-5 mr-2" />
+                  Twitter
+                </Button>
+                <Button
+                  onClick={() => handleShare('linkedin')}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Linkedin className="h-5 w-5 mr-2" />
+                  LinkedIn
+                </Button>
+                <Button
+                  onClick={() => handleShare('whatsapp')}
+                  variant="outline"
+                  className="w-full text-green-600 hover:text-green-700"
+                >
+                  <MessageCircle className="h-5 w-5 mr-2" />
+                  WhatsApp
+                </Button>
+                <Button
+                  onClick={() => handleShare('email')}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Mail className="h-5 w-5 mr-2" />
+                  Email
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="bg-blue-50 rounded-xl p-6">
             <h2 className="text-xl font-semibold text-blue-900 mb-4">Want Another Entry?</h2>
