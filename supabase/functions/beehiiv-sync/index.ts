@@ -57,7 +57,8 @@ serve(async (req) => {
       utm_source: 'website',
       send_welcome_email: true,
       reactivate_existing: true,
-      custom_fields: customFields
+      custom_fields: customFields,
+      tags: ['Comprendi-sweeps'] // Add the custom tag here
     };
 
     console.log('Sending request to Beehiiv with body:', JSON.stringify(requestBody));
