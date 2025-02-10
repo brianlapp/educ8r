@@ -360,6 +360,12 @@ export type Database = {
         }
         Returns: undefined
       }
+      increment_referral_count: {
+        Args: {
+          p_pap_affiliate_id: string
+        }
+        Returns: undefined
+      }
       is_admin: {
         Args: {
           user_id: string
