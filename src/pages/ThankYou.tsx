@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -220,7 +219,7 @@ Best regards`;
               </div>
 
               <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Email Template</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Email to a friend</h2>
                 <p className="text-sm text-gray-600 mb-4">Use this template to share with your friends via email:</p>
                 <div className="space-y-4">
                   <Textarea
