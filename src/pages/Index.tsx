@@ -60,7 +60,9 @@ const Index = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase
+      console.log('Submitting form data:', formData);
+      
+      const { data, error } = await supabase
         .from('newsletter_submissions')
         .insert([
           {
@@ -68,9 +70,15 @@ const Index = () => {
             last_name: formData.lastName,
             email: formData.email
           }
-        ]);
+        ])
+        .select();
 
-      if (error) throw error;
+      console.log('Supabase response:', { data, error });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast({
         title: "Success!",
