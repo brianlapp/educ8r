@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Link2, Mail, Facebook, Twitter, Linkedin, MessageCircle } from "lucide-react";
@@ -12,72 +12,48 @@ const ThankYou = () => {
   const { toast } = useToast();
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [referralUrl, setReferralUrl] = useState("");
-  const [entryCount, setEntryCount] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
 
-  useEffect(() => {
+  // Simplified to just get the referral URL since this is a new entry
+  useState(() => {
     const initializePage = async () => {
-      // Get parameters from URL
       const urlParams = new URLSearchParams(location.search);
       const email = urlParams.get('email');
-      const sweepstakesId = urlParams.get('sweepstakes_id');
       
-      if (email && sweepstakesId) {
+      if (email) {
         try {
-          // Fetch current entry count and user data - using maybeSingle() instead of single()
-          const { data: entryData, error: entryError } = await supabase
-            .from('sweepstakes_entries')
-            .select('entry_count, referral_count, first_name, last_name')
-            .eq('email', email)
-            .eq('sweepstakes_id', sweepstakesId)
-            .maybeSingle();
-
-          if (entryError) throw entryError;
-          
-          // Only proceed with PAP API call if we found an entry
-          if (entryData) {
-            setEntryCount(entryData.entry_count);
-
-            // Call PAP API to get/create affiliate ID and referral URL
-            const { data: papData, error: papError } = await supabase.functions.invoke('pap-api', {
-              body: {
-                email,
-                first_name: entryData.first_name,
-                last_name: entryData.last_name
-              }
-            });
-
-            if (papError) throw papError;
-            if (papData?.referralUrl) {
-              setReferralUrl(papData.referralUrl);
+          // Just call PAP API to get referral URL for new entry
+          const { data: papData, error: papError } = await supabase.functions.invoke('pap-api', {
+            body: {
+              email,
+              // These are required by PAP API but won't affect existing entry
+              first_name: urlParams.get('first_name') || '',
+              last_name: urlParams.get('last_name') || ''
             }
-          } else {
-            // Handle case where no entry was found
-            toast({
-              title: "Entry Not Found",
-              description: "We couldn't find your sweepstakes entry. Please try entering again.",
-              variant: "destructive",
-            });
+          });
+
+          if (papError) throw papError;
+          if (papData?.referralUrl) {
+            setReferralUrl(papData.referralUrl);
           }
         } catch (err) {
-          console.error('Error initializing thank you page:', err);
+          console.error('Error getting referral URL:', err);
           toast({
             title: "Error",
-            description: "There was an error loading your entry information.",
+            description: "There was a problem getting your referral link. Please try refreshing the page.",
             variant: "destructive",
           });
         } finally {
           setIsLoading(false);
         }
       } else {
-        console.warn('Missing required parameters:', { email, sweepstakesId });
+        setIsLoading(false);
         toast({
           title: "Missing Information",
           description: "Required information is missing from the URL.",
           variant: "destructive",
         });
-        setIsLoading(false);
       }
     };
 
@@ -147,7 +123,7 @@ const ThankYou = () => {
         <div className="max-w-3xl mx-auto px-4">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Thanks for Entering!</h1>
-            <p className="text-lg text-gray-600 mb-2">You currently have {entryCount} entries in the sweepstakes!</p>
+            <p className="text-lg text-gray-600 mb-2">You currently have 1 entry in the sweepstakes!</p>
             <p className="text-lg text-gray-600 mb-6">Want to increase your chances of winning? Share with friends to earn extra entries!</p>
           </div>
 
