@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import ThankYou from "./pages/ThankYou";
 import NotFound from "./pages/NotFound";
+import { LegalDocument } from "./components/legal/LegalDocument";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/thank-you" element={<ThankYou />} />
+          <Route path="/legal/:type" element={<LegalDocument />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -176,7 +176,10 @@ export const EntryForm = () => {
               htmlFor="terms"
               className="text-sm text-gray-600 leading-relaxed"
             >
-              By entering your information and clicking Join Now, you agree to our Privacy Policy, Terms and Conditions and understand that we will be sending you our newsletters by email. Unsubscribe at any time.
+              By entering your information and clicking Join Now, you agree to our{" "}
+              <Link to="/legal/privacy_policy" className="text-blue-600 hover:underline">Privacy Policy</Link>,{" "}
+              <Link to="/legal/terms_conditions" className="text-blue-600 hover:underline">Terms and Conditions</Link>{" "}
+              and understand that we will be sending you our newsletters by email. Unsubscribe at any time.
             </Label>
           </div>
 
