@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -61,14 +62,16 @@ const Index = () => {
     try {
       console.log('Submitting form data:', formData);
       
-      // Store in form_submissions table
+      // Store in form_submissions table with submission_data
       const { data: submissionData, error: submissionError } = await supabase
         .from('form_submissions')
         .insert([
           {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: formData.email,
+            submission_data: {
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              email: formData.email
+            },
             processed: false
           }
         ])
