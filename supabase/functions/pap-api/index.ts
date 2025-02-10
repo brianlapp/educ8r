@@ -27,10 +27,11 @@ serve(async (req) => {
     // First, try to get existing affiliate ID
     const getAffiliateResponse = await fetch(`${PAP_API_URL}?action=getAffiliateId&email=${encodeURIComponent(email)}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     });
+
+    if (!getAffiliateResponse.ok) {
+      throw new Error(`Failed to get affiliate ID: ${getAffiliateResponse.statusText}`);
+    }
 
     const affiliateData = await getAffiliateResponse.json();
     let papAffiliateId = affiliateData.affiliate_id;
@@ -50,6 +51,10 @@ serve(async (req) => {
           name: `${first_name} ${last_name}`.trim(),
         }),
       });
+
+      if (!createAffiliateResponse.ok) {
+        throw new Error(`Failed to create affiliate: ${createAffiliateResponse.statusText}`);
+      }
 
       const newAffiliateData = await createAffiliateResponse.json();
       papAffiliateId = newAffiliateData.affiliate_id;
@@ -77,7 +82,6 @@ serve(async (req) => {
 
     if (updateError) {
       console.error('Error updating sweepstakes entry:', updateError);
-      // Don't throw here, continue with the response
     }
 
     return new Response(
@@ -94,7 +98,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in pap-api:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
