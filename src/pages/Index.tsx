@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -9,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { addDays, differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from "date-fns";
+import { differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from "date-fns";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const Index = () => {
   });
 
   useEffect(() => {
-    const endDate = addDays(new Date(), 60);
+    const endDate = new Date('2025-04-11T23:59:59');
     
     const timer = setInterval(() => {
       const now = new Date();
