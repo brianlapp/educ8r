@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Link2, Mail, Facebook, Twitter, Linkedin, WhatsApp } from "lucide-react";
+import { Link2, Mail, Facebook, Twitter, Linkedin, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -163,9 +163,9 @@ const ThankYou = () => {
               <Button
                 onClick={() => handleShare('whatsapp')}
                 variant="outline"
-                className="w-full"
+                className="w-full text-green-600 hover:text-green-700"
               >
-                <WhatsApp className="h-5 w-5 mr-2" />
+                <MessageCircle className="h-5 w-5 mr-2" />
                 WhatsApp
               </Button>
               <Button
