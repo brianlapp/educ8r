@@ -11,9 +11,9 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load Beehiiv embed script
+    // Load attribution tracking script
     const script = document.createElement('script');
-    script.src = 'https://embeds.beehiiv.com/js/embed.js';
+    script.src = 'https://embeds.beehiiv.com/attribution.js';
     script.async = true;
     document.body.appendChild(script);
 
@@ -42,10 +42,20 @@ const Index = () => {
           </div>
 
           <div className="w-full md:w-1/2 min-w-[320px] p-4">
-            <div 
-              data-beehiiv-embed="true"
-              className="beehiiv-embed"
-            ></div>
+            <iframe 
+              src="https://embeds.beehiiv.com/c0cb4ef0-2b78-4ed2-87b1-f8431b2869cd"
+              data-test-id="beehiiv-embed" 
+              width="100%" 
+              height="320" 
+              frameBorder="0" 
+              scrolling="no" 
+              style={{
+                borderRadius: '4px',
+                border: '2px solid #e5e7eb',
+                margin: 0,
+                backgroundColor: 'transparent'
+              }}
+            />
           </div>
         </div>
       </main>
