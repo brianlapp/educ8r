@@ -17,9 +17,8 @@ const ThankYou = () => {
 
   useEffect(() => {
     const initializePage = async () => {
-      // Get referral data from URL if any
+      // Get parameters from URL
       const urlParams = new URLSearchParams(location.search);
-      const referralCode = urlParams.get('ref');
       const email = urlParams.get('email');
       const sweepstakesId = urlParams.get('sweepstakes_id');
       
@@ -38,39 +37,20 @@ const ThankYou = () => {
             setEntryCount(entryData.entry_count);
           }
 
-          // Store the submission with referral data if present
-          const { data: submissionData, error: submissionError } = await supabase
-            .from('form_submissions')
-            .insert([
-              {
-                submission_data: {
-                  referralCode,
-                  email,
-                  sweepstakesId,
-                  source: 'thank_you_page',
-                  timestamp: new Date().toISOString()
-                },
-                referral_code: referralCode
-              }
-            ])
-            .select()
-            .single();
-
-          if (submissionError) throw submissionError;
-
-          // Generate sharing URL with new referral code
-          const uniqueId = submissionData?.id || '';
-          const shareUrl = `${window.location.origin}?ref=${uniqueId}&sweepstakes_id=${sweepstakesId}`;
+          // Generate sharing URL
+          const shareUrl = `${window.location.origin}?ref=${btoa(email)}&sweepstakes_id=${sweepstakesId}`;
           setReferralUrl(shareUrl);
 
         } catch (err) {
-          console.error('Error processing submission:', err);
+          console.error('Error initializing thank you page:', err);
           toast({
             title: "Error",
-            description: "There was an error processing your submission.",
+            description: "There was an error loading your entry information.",
             variant: "destructive",
           });
         }
+      } else {
+        console.warn('Missing required parameters:', { email, sweepstakesId });
       }
     };
 
