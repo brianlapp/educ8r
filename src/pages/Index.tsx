@@ -94,7 +94,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F6F6F7]">
+    <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       
       <main className="flex-grow p-3 md:p-6 mt-16">
@@ -177,19 +177,19 @@ const Index = () => {
             <CardHeader className="text-center pb-4">
               <h2 className="text-2xl font-bold text-[#15b0f8]">Time Left to Enter!</h2>
               <div className="flex justify-center space-x-4 text-center mt-4">
-                <div className="bg-[#F1F0FB] px-4 py-2 rounded-lg">
+                <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
                   <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.days}</div>
                   <div className="text-sm text-[#15b0f8]">Days</div>
                 </div>
-                <div className="bg-[#F1F0FB] px-4 py-2 rounded-lg">
+                <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
                   <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.hours}</div>
                   <div className="text-sm text-[#15b0f8]">Hours</div>
                 </div>
-                <div className="bg-[#F1F0FB] px-4 py-2 rounded-lg">
+                <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
                   <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.minutes}</div>
                   <div className="text-sm text-[#15b0f8]">Minutes</div>
                 </div>
-                <div className="bg-[#F1F0FB] px-4 py-2 rounded-lg">
+                <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
                   <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.seconds}</div>
                   <div className="text-sm text-[#15b0f8]">Seconds</div>
                 </div>
