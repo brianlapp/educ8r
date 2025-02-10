@@ -66,7 +66,7 @@ const Index = () => {
             <img
               src="/lovable-uploads/839373db-936e-48b2-9ab4-1e285fc982ed.png"
               alt="School Supplies Giveaway"
-              className="w-full h-auto rounded-lg object-cover shadow-lg hover:shadow-xl transition-shadow duration-300"
+              className="w-full h-auto rounded-lg object-cover"
               loading="eager"
               fetchPriority="high"
             />
@@ -113,7 +113,7 @@ const Index = () => {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-4 text-xl rounded-lg shadow-md hover:shadow-lg transition-all duration-300 mt-6"
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-6 text-xl rounded-lg transition-all duration-300 mt-6"
                 >
                   {isLoading ? "Processing..." : "Enter to Win! →"}
                 </Button>
