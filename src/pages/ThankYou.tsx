@@ -1,20 +1,65 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Link2 } from "lucide-react";
+import { Link2, Mail, Facebook, Twitter, Linkedin, WhatsApp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useLocation } from "react-router-dom";
 
 const ThankYou = () => {
   const { toast } = useToast();
   const [isLinkCopied, setIsLinkCopied] = useState(false);
-  const referrerUrl = "https://example.com/partner-page"; // Placeholder URL
-  const emailTemplate = `Subject: Check out this amazing opportunity!\n\nHey! I thought you might be interested in checking this out: ${referrerUrl}. It's pretty cool!`;
+  const [referralUrl, setReferralUrl] = useState("");
+  const location = useLocation();
+
+  useEffect(() => {
+    const initializePage = async () => {
+      // Get referral data from URL if any
+      const urlParams = new URLSearchParams(location.search);
+      const referralCode = urlParams.get('ref');
+      
+      try {
+        // Store the submission with referral data if present
+        const { data: submissionData, error: submissionError } = await supabase
+          .from('form_submissions')
+          .insert([
+            {
+              submission_data: {
+                referralCode,
+                source: 'thank_you_page',
+                timestamp: new Date().toISOString()
+              },
+              referral_code: referralCode
+            }
+          ])
+          .select()
+          .single();
+
+        if (submissionError) throw submissionError;
+
+        // Generate sharing URL with new referral code
+        const uniqueId = submissionData?.id || '';
+        const shareUrl = `${window.location.origin}?ref=${uniqueId}`;
+        setReferralUrl(shareUrl);
+
+      } catch (err) {
+        console.error('Error processing submission:', err);
+        toast({
+          title: "Error",
+          description: "There was an error processing your submission.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    initializePage();
+  }, [location.search, toast]);
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(referrerUrl);
+      await navigator.clipboard.writeText(referralUrl);
       setIsLinkCopied(true);
       toast({
         title: "Link copied!",
@@ -30,33 +75,33 @@ const ThankYou = () => {
     }
   };
 
-  const handleCopyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(emailTemplate);
-      toast({
-        title: "Email template copied!",
-        description: "The email template has been copied to your clipboard.",
-      });
-    } catch (err) {
-      toast({
-        title: "Failed to copy",
-        description: "Please try copying the text manually.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const shareOnSocial = (platform: string) => {
-    let url = "";
+  const handleShare = (platform: string) => {
+    let url = '';
+    const text = "Join this amazing giveaway!";
+    
     switch (platform) {
-      case "facebook":
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referrerUrl)}`;
+      case 'facebook':
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralUrl)}`;
         break;
-      case "twitter":
-        url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(referrerUrl)}`;
+      case 'twitter':
+        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(referralUrl)}`;
+        break;
+      case 'linkedin':
+        url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(referralUrl)}`;
+        break;
+      case 'whatsapp':
+        url = `https://wa.me/?text=${encodeURIComponent(text + ' ' + referralUrl)}`;
+        break;
+      case 'email':
+        const subject = "Check out this giveaway!";
+        const body = `Hey! I thought you might be interested in this: ${referralUrl}`;
+        url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         break;
     }
-    if (url) window.open(url, "_blank", "noopener,noreferrer");
+    
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -64,63 +109,85 @@ const ThankYou = () => {
       <Navbar />
       
       <main className="flex-grow w-full pt-16 pb-12 bg-gray-50">
-        <div className="w-full max-w-2xl mx-auto px-4">
-          <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">Share This Page</h1>
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Thanks for Entering!</h1>
+            <p className="text-lg text-gray-600 mb-6">Want to increase your chances of winning? Share with friends to earn extra entries!</p>
+          </div>
 
-          <div className="space-y-6">
-            {/* Social Sharing Buttons */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                onClick={() => shareOnSocial("facebook")}
-                className="w-full bg-[#1877F2] text-white py-4 rounded-lg font-semibold text-center hover:bg-[#1877F2]/90 transition-colors"
+          <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Share Your Unique Link</h2>
+            <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-3 mb-6">
+              <input
+                type="text"
+                value={referralUrl}
+                readOnly
+                className="flex-grow bg-transparent border-none text-sm text-gray-600 focus:outline-none"
+              />
+              <Button
+                onClick={handleCopyLink}
+                variant="secondary"
+                size="sm"
+                className="shrink-0"
               >
-                Share this on Facebook
-              </button>
-              <button
-                onClick={() => shareOnSocial("twitter")}
-                className="w-full bg-[#1DA1F2] text-white py-4 rounded-lg font-semibold text-center hover:bg-[#1DA1F2]/90 transition-colors"
+                <Link2 className="h-4 w-4 mr-2" />
+                {isLinkCopied ? "Copied!" : "Copy"}
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <Button
+                onClick={() => handleShare('facebook')}
+                variant="outline"
+                className="w-full"
               >
-                Share this on Twitter
-              </button>
+                <Facebook className="h-5 w-5 mr-2" />
+                Facebook
+              </Button>
+              <Button
+                onClick={() => handleShare('twitter')}
+                variant="outline"
+                className="w-full"
+              >
+                <Twitter className="h-5 w-5 mr-2" />
+                Twitter
+              </Button>
+              <Button
+                onClick={() => handleShare('linkedin')}
+                variant="outline"
+                className="w-full"
+              >
+                <Linkedin className="h-5 w-5 mr-2" />
+                LinkedIn
+              </Button>
+              <Button
+                onClick={() => handleShare('whatsapp')}
+                variant="outline"
+                className="w-full"
+              >
+                <WhatsApp className="h-5 w-5 mr-2" />
+                WhatsApp
+              </Button>
+              <Button
+                onClick={() => handleShare('email')}
+                variant="outline"
+                className="w-full"
+              >
+                <Mail className="h-5 w-5 mr-2" />
+                Email
+              </Button>
             </div>
+          </div>
 
-            {/* Direct Link Section */}
-            <div className="space-y-2">
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Direct Link</h2>
-              <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-3">
-                <input
-                  type="text"
-                  value={referrerUrl}
-                  readOnly
-                  className="flex-grow bg-transparent border-none text-sm text-gray-600 focus:outline-none"
-                />
-                <Button
-                  onClick={handleCopyLink}
-                  variant="secondary"
-                  size="sm"
-                  className="shrink-0"
-                >
-                  {isLinkCopied ? "Copied!" : "Copy"}
-                </Button>
-              </div>
-            </div>
-
-            {/* Email Section */}
-            <div className="space-y-2">
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Email A Friend</h2>
-              <div className="bg-gray-100 rounded-lg p-4 space-y-4">
-                <div className="text-sm text-gray-600 whitespace-pre-line">
-                  {emailTemplate}
-                </div>
-                <Button
-                  onClick={handleCopyEmail}
-                  variant="secondary"
-                  className="w-full"
-                >
-                  Copy Email Template
-                </Button>
-              </div>
-            </div>
+          <div className="bg-blue-50 rounded-xl p-6">
+            <h2 className="text-xl font-semibold text-blue-900 mb-4">Want Another Entry?</h2>
+            <p className="text-blue-700 mb-4">Sign up for Comprendi Reading Lessons and get an extra entry!</p>
+            <Button 
+              onClick={() => window.open('https://example.com/comprendi-signup', '_blank')}
+              className="w-full md:w-auto"
+            >
+              Sign Up Now
+            </Button>
           </div>
         </div>
       </main>

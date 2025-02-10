@@ -42,6 +42,44 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          converted: boolean | null
+          created_at: string
+          id: string
+          pap_tracking_id: string | null
+          referred_email: string
+          referrer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          converted?: boolean | null
+          created_at?: string
+          id?: string
+          pap_tracking_id?: string | null
+          referred_email: string
+          referrer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          converted?: boolean | null
+          created_at?: string
+          id?: string
+          pap_tracking_id?: string | null
+          referred_email?: string
+          referrer_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "sweepstakes_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sweepstakes: {
         Row: {
           beehiiv_tag: string | null
@@ -120,43 +158,58 @@ export type Database = {
       sweepstakes_entries: {
         Row: {
           age: number | null
+          beehiiv_subscriber_id: string | null
           country: string | null
           created_at: string | null
           email: string
+          entry_count: number | null
           first_name: string
           gender: string | null
           id: string
           is_winner: boolean | null
           last_name: string
+          pap_referral_id: string | null
           postal_code: string | null
+          referral_count: number | null
+          sponsor_signup: boolean | null
           sweepstakes_id: string | null
           terms_accepted: boolean
         }
         Insert: {
           age?: number | null
+          beehiiv_subscriber_id?: string | null
           country?: string | null
           created_at?: string | null
           email: string
+          entry_count?: number | null
           first_name: string
           gender?: string | null
           id?: string
           is_winner?: boolean | null
           last_name: string
+          pap_referral_id?: string | null
           postal_code?: string | null
+          referral_count?: number | null
+          sponsor_signup?: boolean | null
           sweepstakes_id?: string | null
           terms_accepted?: boolean
         }
         Update: {
           age?: number | null
+          beehiiv_subscriber_id?: string | null
           country?: string | null
           created_at?: string | null
           email?: string
+          entry_count?: number | null
           first_name?: string
           gender?: string | null
           id?: string
           is_winner?: boolean | null
           last_name?: string
+          pap_referral_id?: string | null
           postal_code?: string | null
+          referral_count?: number | null
+          sponsor_signup?: boolean | null
           sweepstakes_id?: string | null
           terms_accepted?: boolean
         }
