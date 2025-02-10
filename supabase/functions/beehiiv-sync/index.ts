@@ -11,15 +11,26 @@ const BEEHIIV_API_KEY = Deno.env.get('BEEHIIV_API_KEY');
 const BEEHIIV_PUBLICATION_ID = 'pub_0d2f6c47-47c7-40b3-8537-6978ed770251';
 
 serve(async (req) => {
+  // Add request logging
+  console.log('Request received:', {
+    method: req.method,
+    url: req.url,
+    headers: Object.fromEntries(req.headers.entries())
+  });
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Log the start of function execution
     console.log('Starting beehiiv-sync function execution');
+    
+    // Check and log API key status (partial key for security)
+    const apiKeyStatus = BEEHIIV_API_KEY ? 
+      `present (starts with: ${BEEHIIV_API_KEY.substring(0, 4)}...)` : 
+      'not set';
+    console.log('BEEHIIV_API_KEY status:', apiKeyStatus);
 
-    // Check API key first
     if (!BEEHIIV_API_KEY) {
       console.error('BEEHIIV_API_KEY environment variable is not set');
       throw new Error('BEEHIIV_API_KEY is not set');
@@ -48,12 +59,20 @@ serve(async (req) => {
 
     console.log('Sending request to Beehiiv with body:', JSON.stringify(requestBody));
 
-    const response = await fetch(`https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`, {
+    const beehiivUrl = `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`;
+    console.log('Beehiiv API URL:', beehiivUrl);
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
+    };
+    console.log('Request headers (excluding Authorization):', {
+      'Content-Type': headers['Content-Type']
+    });
+
+    const response = await fetch(beehiivUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
-      },
+      headers,
       body: JSON.stringify(requestBody),
     });
 
@@ -78,7 +97,8 @@ serve(async (req) => {
     console.error('Error in beehiiv-sync:', {
       message: error.message,
       stack: error.stack,
-      name: error.name
+      name: error.name,
+      cause: error.cause
     });
     return new Response(
       JSON.stringify({ error: error.message }),
