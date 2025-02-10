@@ -11,9 +11,9 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load SweepWidget script
+    // Load Beehiiv embed script
     const script = document.createElement('script');
-    script.src = 'https://sweepwidget.com/w/j/w_init.js';
+    script.src = 'https://embeds.beehiiv.com/js/embed.js';
     script.async = true;
     document.body.appendChild(script);
 
@@ -31,7 +31,7 @@ const Index = () => {
       
       <main className="flex-grow p-3 md:p-6 mt-16">
         <div className="container mx-auto flex flex-col md:flex-row gap-0 items-start">
-          <div className="w-full md:w-1/2"> {/* Reduced from w-3/5 to w-1/2 to give more space to form */}
+          <div className="w-full md:w-1/2">
             <img
               src="/lovable-uploads/839373db-936e-48b2-9ab4-1e285fc982ed.png"
               alt="School Supplies Giveaway"
@@ -41,8 +41,11 @@ const Index = () => {
             />
           </div>
 
-          <div className="w-full md:w-1/2 min-w-[320px]"> {/* Increased from w-2/5 to w-1/2 - making form 20% wider */}
-            <div id="88241-zok3fc2t" className="sw_container"></div>
+          <div className="w-full md:w-1/2 min-w-[320px] p-4">
+            <div 
+              data-beehiiv-embed="true"
+              className="beehiiv-embed"
+            ></div>
           </div>
         </div>
       </main>
