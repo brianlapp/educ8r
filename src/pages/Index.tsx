@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -59,29 +60,25 @@ const Index = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("https://api.beehiiv.com/v2/publications/pub_c0cb4ef0-2b78-4ed2-87b1-f8431b2869cd/subscriptions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          name: `${formData.firstName} ${formData.lastName}`,
-          reactivate_existing: false,
-          utm_source: window.location.hostname,
-        }),
-      });
+      const { error } = await supabase
+        .from('newsletter_submissions')
+        .insert([
+          {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email
+          }
+        ]);
 
-      if (response.ok) {
-        toast({
-          title: "Success!",
-          description: "You've been successfully subscribed.",
-        });
-        navigate("/thank-you");
-      } else {
-        throw new Error("Failed to subscribe");
-      }
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "You've been successfully subscribed.",
+      });
+      navigate("/thank-you");
     } catch (error) {
+      console.error('Error:', error);
       toast({
         variant: "destructive",
         title: "Error",
