@@ -37,6 +37,11 @@ serve(async (req) => {
       throw new Error('Email is required');
     }
 
+    if (!sweepstakes_id) {
+      console.error('Sweepstakes ID is required but was not provided');
+      throw new Error('Sweepstakes ID is required');
+    }
+
     // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -55,7 +60,7 @@ serve(async (req) => {
         terms_accepted: true,
         entry_count: 1
       }, {
-        onConflict: 'unique_email_per_sweepstakes', // Updated to use the constraint name
+        onConflict: 'unique_email_per_sweepstakes',
         ignoreDuplicates: true
       })
       .select()

@@ -62,6 +62,19 @@ const Index = () => {
     try {
       console.log('Submitting form data:', formData);
       
+      // Get or create sweepstakes entry first
+      const { data: sweepstakesData, error: sweepstakesError } = await supabase
+        .from('sweepstakes')
+        .select()
+        .eq('is_active', true)
+        .single();
+
+      if (sweepstakesError) {
+        throw sweepstakesError;
+      }
+
+      const sweepstakes_id = sweepstakesData.id;
+      
       // Store in form_submissions table with submission_data
       const { data: submissionData, error: submissionError } = await supabase
         .from('form_submissions')
@@ -70,7 +83,8 @@ const Index = () => {
             submission_data: {
               first_name: formData.firstName,
               last_name: formData.lastName,
-              email: formData.email
+              email: formData.email,
+              sweepstakes_id
             },
             processed: false
           }
@@ -86,7 +100,8 @@ const Index = () => {
         body: {
           first_name: formData.firstName,
           last_name: formData.lastName,
-          email: formData.email
+          email: formData.email,
+          sweepstakes_id
         }
       });
 
@@ -114,7 +129,9 @@ const Index = () => {
         title: "Success!",
         description: "You've been successfully subscribed.",
       });
-      navigate("/thank-you");
+      
+      // Pass email and sweepstakes_id to thank you page
+      navigate(`/thank-you?email=${encodeURIComponent(formData.email)}&sweepstakes_id=${sweepstakes_id}`);
     } catch (error) {
       console.error('Error:', error);
       toast({
