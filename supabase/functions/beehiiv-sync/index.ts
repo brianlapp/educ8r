@@ -16,7 +16,12 @@ serve(async (req) => {
   }
 
   try {
+    // Log the start of function execution
+    console.log('Starting beehiiv-sync function execution');
+
+    // Check API key first
     if (!BEEHIIV_API_KEY) {
+      console.error('BEEHIIV_API_KEY environment variable is not set');
       throw new Error('BEEHIIV_API_KEY is not set');
     }
 
@@ -24,6 +29,7 @@ serve(async (req) => {
     console.log('Received data:', { first_name, last_name, email });
 
     if (!email) {
+      console.error('Email is required but was not provided');
       throw new Error('Email is required');
     }
 
@@ -40,7 +46,7 @@ serve(async (req) => {
       }
     };
 
-    console.log('Sending request to Beehiiv:', requestBody);
+    console.log('Sending request to Beehiiv with body:', JSON.stringify(requestBody));
 
     const response = await fetch(`https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`, {
       method: 'POST',
@@ -53,9 +59,14 @@ serve(async (req) => {
 
     const responseData = await response.json();
     console.log('Beehiiv API response status:', response.status);
-    console.log('Beehiiv API response:', responseData);
+    console.log('Beehiiv API response body:', JSON.stringify(responseData));
 
     if (!response.ok) {
+      console.error('Beehiiv API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: responseData
+      });
       throw new Error(`Beehiiv API error: ${JSON.stringify(responseData)}`);
     }
 
@@ -64,7 +75,11 @@ serve(async (req) => {
       status: 200
     });
   } catch (error) {
-    console.error('Error in beehiiv-sync:', error.message);
+    console.error('Error in beehiiv-sync:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
