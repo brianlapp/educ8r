@@ -7,8 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PAP_API_URL = 'https://dmlearninglab.com/pap/api.php';
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -16,109 +14,38 @@ serve(async (req) => {
   }
 
   try {
-    const { email, first_name, last_name } = await req.json();
+    const { email } = await req.json();
     
     if (!email) {
       throw new Error('Email is required');
     }
 
-    console.log('PAP API request received:', { email, first_name, last_name });
+    console.log('Generating referral URL for:', email);
 
-    // First, try to get existing affiliate ID with detailed logging
-    const getAffiliateUrl = `${PAP_API_URL}?action=getAffiliateId&email=${encodeURIComponent(email)}`;
-    console.log('Fetching existing affiliate:', getAffiliateUrl);
-    
-    const getAffiliateResponse = await fetch(getAffiliateUrl, {
-      method: 'GET',
-    });
-
-    console.log('Get affiliate response status:', getAffiliateResponse.status);
-    
-    let papAffiliateId = null;
-    
-    // If the affiliate doesn't exist (404) or there's some other error, we'll create a new one
-    if (!getAffiliateResponse.ok) {
-      console.log('No existing affiliate found or error occurred, response:', {
-        status: getAffiliateResponse.status,
-        statusText: getAffiliateResponse.statusText
-      });
-    } else {
-      try {
-        const affiliateData = await getAffiliateResponse.json();
-        console.log('Retrieved affiliate data:', affiliateData);
-        papAffiliateId = affiliateData.affiliate_id;
-      } catch (e) {
-        console.log('Error parsing affiliate data:', e);
-      }
-    }
-
-    // If no existing affiliate was found or there was an error, create a new one
-    if (!papAffiliateId) {
-      console.log('Creating new affiliate');
-      const createPayload = {
-        action: 'createAffiliate',
-        email,
-        name: `${first_name} ${last_name}`.trim(),
-      };
-      
-      console.log('Create affiliate request:', {
-        url: PAP_API_URL,
-        payload: createPayload
-      });
-      
-      const createAffiliateResponse = await fetch(PAP_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(createPayload),
-      });
-
-      console.log('Create affiliate response status:', createAffiliateResponse.status);
-
-      if (!createAffiliateResponse.ok) {
-        const errorText = await createAffiliateResponse.text();
-        console.error('Failed to create affiliate:', {
-          status: createAffiliateResponse.status,
-          statusText: createAffiliateResponse.statusText,
-          body: errorText
-        });
-        throw new Error(`Failed to create affiliate: ${createAffiliateResponse.statusText || errorText}`);
-      }
-
-      const newAffiliateData = await createAffiliateResponse.json();
-      console.log('New affiliate created:', newAffiliateData);
-      papAffiliateId = newAffiliateData.affiliate_id;
-    }
-
-    if (!papAffiliateId) {
-      throw new Error('Failed to get or create PAP affiliate ID');
-    }
-
-    // Generate referral URL
-    const referralUrl = `https://dmlearninglab.com/homesc/?pap_ref_id=${papAffiliateId}`;
-
-    // Update Supabase records
+    // Get or create entry in Supabase
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { error: updateError } = await supabaseClient
+    // Get the entry for this email
+    const { data: entry, error: getError } = await supabaseClient
       .from('sweepstakes_entries')
-      .update({
-        pap_affiliate_id: papAffiliateId
-      })
-      .eq('email', email);
+      .select('id')
+      .eq('email', email)
+      .single();
 
-    if (updateError) {
-      console.error('Error updating sweepstakes entry:', updateError);
+    if (getError) {
+      console.error('Error getting entry:', getError);
+      throw getError;
     }
+
+    // Generate referral URL using the entry ID
+    const referralUrl = `https://dmlearninglab.com/homesc/?ref=${entry.id}`;
 
     return new Response(
       JSON.stringify({ 
-        success: true, 
-        papAffiliateId,
+        success: true,
         referralUrl
       }),
       { 
