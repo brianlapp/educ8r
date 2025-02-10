@@ -44,6 +44,12 @@ serve(async (req) => {
       throw new Error('Email is required');
     }
 
+    // Format the custom fields as an array of objects with id and value
+    const customFields = [
+      { id: 'first_name', value: first_name || '' },
+      { id: 'last_name', value: last_name || '' }
+    ];
+
     const requestBody = {
       email: email,
       publication_id: BEEHIIV_PUBLICATION_ID,
@@ -51,10 +57,7 @@ serve(async (req) => {
       utm_source: 'website',
       send_welcome_email: true,
       reactivate_existing: true,
-      custom_fields: {
-        first_name: first_name || '',
-        last_name: last_name || ''
-      }
+      custom_fields: customFields
     };
 
     console.log('Sending request to Beehiiv with body:', JSON.stringify(requestBody));
