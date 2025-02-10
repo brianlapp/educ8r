@@ -10,6 +10,7 @@ const corsHeaders = {
 const PAP_API_URL = 'https://dmlearninglab.com/pap/api.php';
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -76,7 +77,7 @@ serve(async (req) => {
 
     if (updateError) {
       console.error('Error updating sweepstakes entry:', updateError);
-      throw updateError;
+      // Don't throw here, continue with the response
     }
 
     return new Response(
