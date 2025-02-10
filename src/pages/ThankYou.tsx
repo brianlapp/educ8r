@@ -12,6 +12,7 @@ const ThankYou = () => {
   const { toast } = useToast();
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [referralUrl, setReferralUrl] = useState("");
+  const [entryCount, setEntryCount] = useState(1);
   const location = useLocation();
 
   useEffect(() => {
@@ -19,38 +20,57 @@ const ThankYou = () => {
       // Get referral data from URL if any
       const urlParams = new URLSearchParams(location.search);
       const referralCode = urlParams.get('ref');
+      const email = urlParams.get('email');
+      const sweepstakesId = urlParams.get('sweepstakes_id');
       
-      try {
-        // Store the submission with referral data if present
-        const { data: submissionData, error: submissionError } = await supabase
-          .from('form_submissions')
-          .insert([
-            {
-              submission_data: {
-                referralCode,
-                source: 'thank_you_page',
-                timestamp: new Date().toISOString()
-              },
-              referral_code: referralCode
-            }
-          ])
-          .select()
-          .single();
+      if (email && sweepstakesId) {
+        try {
+          // Fetch current entry count
+          const { data: entryData, error: entryError } = await supabase
+            .from('sweepstakes_entries')
+            .select('entry_count, referral_count')
+            .eq('email', email)
+            .eq('sweepstakes_id', sweepstakesId)
+            .single();
 
-        if (submissionError) throw submissionError;
+          if (entryError) throw entryError;
+          if (entryData) {
+            setEntryCount(entryData.entry_count);
+          }
 
-        // Generate sharing URL with new referral code
-        const uniqueId = submissionData?.id || '';
-        const shareUrl = `${window.location.origin}?ref=${uniqueId}`;
-        setReferralUrl(shareUrl);
+          // Store the submission with referral data if present
+          const { data: submissionData, error: submissionError } = await supabase
+            .from('form_submissions')
+            .insert([
+              {
+                submission_data: {
+                  referralCode,
+                  email,
+                  sweepstakesId,
+                  source: 'thank_you_page',
+                  timestamp: new Date().toISOString()
+                },
+                referral_code: referralCode
+              }
+            ])
+            .select()
+            .single();
 
-      } catch (err) {
-        console.error('Error processing submission:', err);
-        toast({
-          title: "Error",
-          description: "There was an error processing your submission.",
-          variant: "destructive",
-        });
+          if (submissionError) throw submissionError;
+
+          // Generate sharing URL with new referral code
+          const uniqueId = submissionData?.id || '';
+          const shareUrl = `${window.location.origin}?ref=${uniqueId}&sweepstakes_id=${sweepstakesId}`;
+          setReferralUrl(shareUrl);
+
+        } catch (err) {
+          console.error('Error processing submission:', err);
+          toast({
+            title: "Error",
+            description: "There was an error processing your submission.",
+            variant: "destructive",
+          });
+        }
       }
     };
 
@@ -112,6 +132,7 @@ const ThankYou = () => {
         <div className="max-w-3xl mx-auto px-4">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Thanks for Entering!</h1>
+            <p className="text-lg text-gray-600 mb-2">You currently have {entryCount} entries in the sweepstakes!</p>
             <p className="text-lg text-gray-600 mb-6">Want to increase your chances of winning? Share with friends to earn extra entries!</p>
           </div>
 
