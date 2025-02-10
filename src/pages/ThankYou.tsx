@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Link2, Mail, Facebook, Twitter, Linkedin, MessageCircle } from "lucide-react";
@@ -15,19 +14,16 @@ const ThankYou = () => {
   const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
 
-  // Simplified to just get the referral URL since this is a new entry
-  useState(() => {
+  useEffect(() => {
     const initializePage = async () => {
       const urlParams = new URLSearchParams(location.search);
       const email = urlParams.get('email');
       
       if (email) {
         try {
-          // Just call PAP API to get referral URL for new entry
           const { data: papData, error: papError } = await supabase.functions.invoke('pap-api', {
             body: {
               email,
-              // These are required by PAP API but won't affect existing entry
               first_name: urlParams.get('first_name') || '',
               last_name: urlParams.get('last_name') || ''
             }
