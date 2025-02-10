@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -97,111 +96,115 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       
-      <main className="flex-grow p-3 md:p-6 mt-16">
-        <div className="container mx-auto flex flex-col md:flex-row gap-6 items-start">
-          <div className="w-full md:w-1/2">
-            <img
-              src="/lovable-uploads/839373db-936e-48b2-9ab4-1e285fc982ed.png"
-              alt="School Supplies Giveaway"
-              className="w-full h-auto rounded-lg object-cover"
-              loading="eager"
-              fetchPriority="high"
-            />
-          </div>
+      <main className="flex-grow mt-16">
+        <section className="py-12">
+          <div className="container mx-auto px-3 flex flex-col md:flex-row gap-6 items-start">
+            <div className="w-full md:w-1/2">
+              <img
+                src="/lovable-uploads/839373db-936e-48b2-9ab4-1e285fc982ed.png"
+                alt="School Supplies Giveaway"
+                className="w-full h-auto rounded-lg object-cover"
+                loading="eager"
+                fetchPriority="high"
+              />
+            </div>
 
-          <div className="w-full md:w-1/2 min-w-[320px]">
-            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
-                  🎉 Win a $1,000 School Supply Giveaway! 🎉
-                </h1>
-              </div>
-              
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-5">
-                  <Input
-                    type="text"
-                    placeholder="First Name"
-                    required
-                    value={formData.firstName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                    className="w-full bg-[#F1F1F1] border-transparent focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] h-12 text-lg"
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Last Name"
-                    required
-                    value={formData.lastName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                    className="w-full bg-[#F1F1F1] border-transparent focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] h-12 text-lg"
-                  />
-                  <Input
-                    type="email"
-                    placeholder="Email Address"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full bg-[#F1F1F1] border-transparent focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] h-12 text-lg"
-                  />
+            <div className="w-full md:w-1/2 min-w-[320px]">
+              <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <div className="text-center mb-8">
+                  <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
+                    🎉 Win a $1,000 School Supply Giveaway! 🎉
+                  </h1>
                 </div>
+                
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-5">
+                    <Input
+                      type="text"
+                      placeholder="First Name"
+                      required
+                      value={formData.firstName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                      className="w-full bg-[#F1F1F1] border-transparent focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] h-12 text-lg"
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Last Name"
+                      required
+                      value={formData.lastName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                      className="w-full bg-[#F1F1F1] border-transparent focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] h-12 text-lg"
+                    />
+                    <Input
+                      type="email"
+                      placeholder="Email Address"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full bg-[#F1F1F1] border-transparent focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] h-12 text-lg"
+                    />
+                  </div>
 
-                <div className="flex items-start space-x-2 mt-6">
-                  <Checkbox
-                    id="terms"
-                    checked={agreed}
-                    onCheckedChange={(checked) => setAgreed(checked as boolean)}
-                    className="mt-1"
-                  />
-                  <Label
-                    htmlFor="terms"
-                    className="text-sm text-gray-600 leading-relaxed"
+                  <div className="flex items-start space-x-2 mt-6">
+                    <Checkbox
+                      id="terms"
+                      checked={agreed}
+                      onCheckedChange={(checked) => setAgreed(checked as boolean)}
+                      className="mt-1"
+                    />
+                    <Label
+                      htmlFor="terms"
+                      className="text-sm text-gray-600 leading-relaxed"
+                    >
+                      By entering your information and clicking Join Now, you agree to our Privacy Policy, Terms and Conditions and understand that we will be sending you our newsletters by email. Unsubscribe at any time.
+                    </Label>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-8 text-xl rounded-lg transition-all duration-300 mt-6"
                   >
-                    By entering your information and clicking Join Now, you agree to our Privacy Policy, Terms and Conditions and understand that we will be sending you our newsletters by email. Unsubscribe at any time.
-                  </Label>
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-8 text-xl rounded-lg transition-all duration-300 mt-6"
-                >
-                  {isLoading ? "Processing..." : "Enter to Win! →"}
-                </Button>
-              </form>
+                    {isLoading ? "Processing..." : "Enter to Win! →"}
+                  </Button>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="container mx-auto mt-8">
-          <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <CardHeader className="text-center pb-4">
-              <h2 className="text-2xl font-bold text-[#15b0f8]">Time Left to Enter!</h2>
-              <div className="flex justify-center space-x-4 text-center mt-4">
-                <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
-                  <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.days}</div>
-                  <div className="text-sm text-[#15b0f8]">Days</div>
+        <section className="py-12 bg-[#F1F1F1]">
+          <div className="container mx-auto px-3">
+            <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <CardHeader className="text-center pb-4">
+                <h2 className="text-2xl font-bold text-[#15b0f8]">Time Left to Enter!</h2>
+                <div className="flex justify-center space-x-4 text-center mt-4">
+                  <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
+                    <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.days}</div>
+                    <div className="text-sm text-[#15b0f8]">Days</div>
+                  </div>
+                  <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
+                    <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.hours}</div>
+                    <div className="text-sm text-[#15b0f8]">Hours</div>
+                  </div>
+                  <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
+                    <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.minutes}</div>
+                    <div className="text-sm text-[#15b0f8]">Minutes</div>
+                  </div>
+                  <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
+                    <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.seconds}</div>
+                    <div className="text-sm text-[#15b0f8]">Seconds</div>
+                  </div>
                 </div>
-                <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
-                  <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.hours}</div>
-                  <div className="text-sm text-[#15b0f8]">Hours</div>
-                </div>
-                <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
-                  <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.minutes}</div>
-                  <div className="text-sm text-[#15b0f8]">Minutes</div>
-                </div>
-                <div className="bg-[#F1F1F1] px-4 py-2 rounded-lg">
-                  <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.seconds}</div>
-                  <div className="text-sm text-[#15b0f8]">Seconds</div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="text-center px-8 pb-8">
-              <p className="text-lg text-gray-600 leading-relaxed">
-                Ready to kick off the school year with a bang? Enter our $1,000 School Supply Giveaway for a chance to win everything you need for an awesome academic year! 🎒✏️
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+              </CardHeader>
+              <CardContent className="text-center px-8 pb-8">
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  Ready to kick off the school year with a bang? Enter our $1,000 School Supply Giveaway for a chance to win everything you need for an awesome academic year! 🎒✏️
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
       </main>
 
       <Footer />
