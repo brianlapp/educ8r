@@ -175,23 +175,23 @@ const Index = () => {
         <div className="container mx-auto mt-8">
           <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
             <CardHeader className="text-center pb-4">
-              <h2 className="text-2xl font-bold text-purple-600">Time Left to Enter!</h2>
+              <h2 className="text-2xl font-bold text-[#15b0f8]">Time Left to Enter!</h2>
               <div className="flex justify-center space-x-4 text-center mt-4">
-                <div className="bg-purple-100 px-4 py-2 rounded-lg">
-                  <div className="text-3xl font-bold text-purple-600">{timeLeft.days}</div>
-                  <div className="text-sm text-purple-600">Days</div>
+                <div className="bg-[#F1F0FB] px-4 py-2 rounded-lg">
+                  <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.days}</div>
+                  <div className="text-sm text-[#15b0f8]">Days</div>
                 </div>
-                <div className="bg-purple-100 px-4 py-2 rounded-lg">
-                  <div className="text-3xl font-bold text-purple-600">{timeLeft.hours}</div>
-                  <div className="text-sm text-purple-600">Hours</div>
+                <div className="bg-[#F1F0FB] px-4 py-2 rounded-lg">
+                  <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.hours}</div>
+                  <div className="text-sm text-[#15b0f8]">Hours</div>
                 </div>
-                <div className="bg-purple-100 px-4 py-2 rounded-lg">
-                  <div className="text-3xl font-bold text-purple-600">{timeLeft.minutes}</div>
-                  <div className="text-sm text-purple-600">Minutes</div>
+                <div className="bg-[#F1F0FB] px-4 py-2 rounded-lg">
+                  <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.minutes}</div>
+                  <div className="text-sm text-[#15b0f8]">Minutes</div>
                 </div>
-                <div className="bg-purple-100 px-4 py-2 rounded-lg">
-                  <div className="text-3xl font-bold text-purple-600">{timeLeft.seconds}</div>
-                  <div className="text-sm text-purple-600">Seconds</div>
+                <div className="bg-[#F1F0FB] px-4 py-2 rounded-lg">
+                  <div className="text-3xl font-bold text-[#15b0f8]">{timeLeft.seconds}</div>
+                  <div className="text-sm text-[#15b0f8]">Seconds</div>
                 </div>
               </div>
             </CardHeader>
