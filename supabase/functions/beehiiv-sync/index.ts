@@ -17,6 +17,7 @@ serve(async (req) => {
 
   try {
     const { first_name, last_name, email } = await req.json();
+    console.log('Received data:', { first_name, last_name, email });
 
     // Call Beehiiv API to create subscriber
     const response = await fetch(`https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`, {
@@ -26,17 +27,26 @@ serve(async (req) => {
         'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
       },
       body: JSON.stringify({
-        email,
+        email: email,
         publication_id: BEEHIIV_PUBLICATION_ID,
-        first_name,
-        last_name,
+        double_opt_in: false,
         utm_source: 'website',
-        reactivate_existing: false,
         send_welcome_email: true,
+        custom_fields: {
+          first_name: first_name,
+          last_name: last_name
+        }
       }),
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Beehiiv API error:', errorData);
+      throw new Error(`Beehiiv API error: ${JSON.stringify(errorData)}`);
+    }
+
     const data = await response.json();
+    console.log('Beehiiv API response:', data);
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
