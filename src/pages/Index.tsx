@@ -8,18 +8,42 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { addDays, differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from "date-fns";
 
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
   });
+
+  useEffect(() => {
+    const endDate = addDays(new Date(), 60);
+    
+    const timer = setInterval(() => {
+      const now = new Date();
+      const days = differenceInDays(endDate, now);
+      const hours = differenceInHours(endDate, now) % 24;
+      const minutes = differenceInMinutes(endDate, now) % 60;
+      const seconds = differenceInSeconds(endDate, now) % 60;
+      
+      setTimeLeft({ days, hours, minutes, seconds });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,9 +115,6 @@ const Index = () => {
                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
                   🎉 Win a $1,000 School Supply Giveaway! 🎉
                 </h1>
-                <p className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
-                  Ready to kick off the school year with a bang? Enter our $1,000 School Supply Giveaway for a chance to win everything you need for an awesome academic year! 🎒✏️
-                </p>
               </div>
               
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -149,6 +170,37 @@ const Index = () => {
               </form>
             </div>
           </div>
+        </div>
+
+        <div className="container mx-auto mt-8">
+          <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <CardHeader className="text-center pb-4">
+              <h2 className="text-2xl font-bold text-purple-600">Time Left to Enter!</h2>
+              <div className="flex justify-center space-x-4 text-center mt-4">
+                <div className="bg-purple-100 px-4 py-2 rounded-lg">
+                  <div className="text-3xl font-bold text-purple-600">{timeLeft.days}</div>
+                  <div className="text-sm text-purple-600">Days</div>
+                </div>
+                <div className="bg-purple-100 px-4 py-2 rounded-lg">
+                  <div className="text-3xl font-bold text-purple-600">{timeLeft.hours}</div>
+                  <div className="text-sm text-purple-600">Hours</div>
+                </div>
+                <div className="bg-purple-100 px-4 py-2 rounded-lg">
+                  <div className="text-3xl font-bold text-purple-600">{timeLeft.minutes}</div>
+                  <div className="text-sm text-purple-600">Minutes</div>
+                </div>
+                <div className="bg-purple-100 px-4 py-2 rounded-lg">
+                  <div className="text-3xl font-bold text-purple-600">{timeLeft.seconds}</div>
+                  <div className="text-sm text-purple-600">Seconds</div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="text-center px-8 pb-8">
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Ready to kick off the school year with a bang? Enter our $1,000 School Supply Giveaway for a chance to win everything you need for an awesome academic year! 🎒✏️
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </main>
 
