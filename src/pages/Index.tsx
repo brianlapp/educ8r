@@ -66,26 +66,32 @@ const Index = () => {
             <img
               src="/lovable-uploads/839373db-936e-48b2-9ab4-1e285fc982ed.png"
               alt="School Supplies Giveaway"
-              className="w-full h-auto rounded-lg object-cover"
+              className="w-full h-auto rounded-lg object-cover shadow-lg hover:shadow-xl transition-shadow duration-300"
               loading="eager"
               fetchPriority="high"
             />
           </div>
 
           <div className="w-full md:w-1/2 min-w-[320px]">
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Win a $1,000 School Supply Giveaway</h1>
-              <p className="text-gray-600 mb-6">🎉 Ready to kick off the school year with a bang? Enter our $1,000 School Supply Giveaway for a chance to win everything you need for an awesome academic year! 🎒✏️</p>
+            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
+                  🎉 Win a $1,000 School Supply Giveaway! 🎉
+                </h1>
+                <p className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto">
+                  Ready to kick off the school year with a bang? Enter our $1,000 School Supply Giveaway for a chance to win everything you need for an awesome academic year! 🎒✏️
+                </p>
+              </div>
               
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-5">
                   <Input
                     type="text"
                     placeholder="First Name"
                     required
                     value={formData.firstName}
                     onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                    className="w-full bg-[#F1F1F1] border-transparent focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]"
+                    className="w-full bg-[#F1F1F1] border-transparent focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] h-12 text-lg"
                   />
                   <Input
                     type="text"
@@ -93,7 +99,7 @@ const Index = () => {
                     required
                     value={formData.lastName}
                     onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                    className="w-full bg-[#F1F1F1] border-transparent focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]"
+                    className="w-full bg-[#F1F1F1] border-transparent focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] h-12 text-lg"
                   />
                   <Input
                     type="email"
@@ -101,15 +107,15 @@ const Index = () => {
                     required
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full bg-[#F1F1F1] border-transparent focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6]"
+                    className="w-full bg-[#F1F1F1] border-transparent focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] h-12 text-lg"
                   />
                 </div>
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 text-lg transition-colors"
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-4 text-xl rounded-lg shadow-md hover:shadow-lg transition-all duration-300 mt-6"
                 >
-                  {isLoading ? "Processing..." : "Continue →"}
+                  {isLoading ? "Processing..." : "Enter to Win! →"}
                 </Button>
               </form>
             </div>
