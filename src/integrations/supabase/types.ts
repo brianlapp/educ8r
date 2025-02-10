@@ -14,6 +14,7 @@ export type Database = {
           beehiiv_id: string | null
           created_at: string | null
           id: string
+          pap_referrer_id: string | null
           processed: boolean | null
           referral_code: string | null
           referral_url: string | null
@@ -24,6 +25,7 @@ export type Database = {
           beehiiv_id?: string | null
           created_at?: string | null
           id?: string
+          pap_referrer_id?: string | null
           processed?: boolean | null
           referral_code?: string | null
           referral_url?: string | null
@@ -34,6 +36,7 @@ export type Database = {
           beehiiv_id?: string | null
           created_at?: string | null
           id?: string
+          pap_referrer_id?: string | null
           processed?: boolean | null
           referral_code?: string | null
           referral_url?: string | null
@@ -192,6 +195,7 @@ export type Database = {
           id: string
           is_winner: boolean | null
           last_name: string
+          pap_affiliate_id: string | null
           pap_referral_id: string | null
           postal_code: string | null
           referral_count: number | null
@@ -211,6 +215,7 @@ export type Database = {
           id?: string
           is_winner?: boolean | null
           last_name: string
+          pap_affiliate_id?: string | null
           pap_referral_id?: string | null
           postal_code?: string | null
           referral_count?: number | null
@@ -230,6 +235,7 @@ export type Database = {
           id?: string
           is_winner?: boolean | null
           last_name?: string
+          pap_affiliate_id?: string | null
           pap_referral_id?: string | null
           postal_code?: string | null
           referral_count?: number | null

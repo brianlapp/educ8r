@@ -13,6 +13,7 @@ const ThankYou = () => {
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [referralUrl, setReferralUrl] = useState("");
   const [entryCount, setEntryCount] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
 
   useEffect(() => {
@@ -24,10 +25,10 @@ const ThankYou = () => {
       
       if (email && sweepstakesId) {
         try {
-          // Fetch current entry count
+          // Fetch current entry count and user data
           const { data: entryData, error: entryError } = await supabase
             .from('sweepstakes_entries')
-            .select('entry_count, referral_count')
+            .select('entry_count, referral_count, first_name, last_name')
             .eq('email', email)
             .eq('sweepstakes_id', sweepstakesId)
             .single();
@@ -35,12 +36,21 @@ const ThankYou = () => {
           if (entryError) throw entryError;
           if (entryData) {
             setEntryCount(entryData.entry_count);
+
+            // Call PAP API to get/create affiliate ID and referral URL
+            const { data: papData, error: papError } = await supabase.functions.invoke('pap-api', {
+              body: {
+                email,
+                first_name: entryData.first_name,
+                last_name: entryData.last_name
+              }
+            });
+
+            if (papError) throw papError;
+            if (papData?.referralUrl) {
+              setReferralUrl(papData.referralUrl);
+            }
           }
-
-          // Generate sharing URL
-          const shareUrl = `${window.location.origin}?ref=${btoa(email)}&sweepstakes_id=${sweepstakesId}`;
-          setReferralUrl(shareUrl);
-
         } catch (err) {
           console.error('Error initializing thank you page:', err);
           toast({
@@ -48,9 +58,12 @@ const ThankYou = () => {
             description: "There was an error loading your entry information.",
             variant: "destructive",
           });
+        } finally {
+          setIsLoading(false);
         }
       } else {
         console.warn('Missing required parameters:', { email, sweepstakesId });
+        setIsLoading(false);
       }
     };
 
@@ -103,6 +116,14 @@ const ThankYou = () => {
       window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <div className="animate-pulse text-gray-600">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
