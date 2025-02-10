@@ -24,19 +24,28 @@ serve(async (req) => {
 
     console.log('PAP API request received:', { email, first_name, last_name });
 
-    // First, try to get existing affiliate ID
-    const getAffiliateResponse = await fetch(`${PAP_API_URL}?action=getAffiliateId&email=${encodeURIComponent(email)}`, {
+    // First, try to get existing affiliate ID with detailed logging
+    const getAffiliateUrl = `${PAP_API_URL}?action=getAffiliateId&email=${encodeURIComponent(email)}`;
+    console.log('Fetching existing affiliate:', getAffiliateUrl);
+    
+    const getAffiliateResponse = await fetch(getAffiliateUrl, {
       method: 'GET',
     });
 
+    console.log('Get affiliate response status:', getAffiliateResponse.status);
+    
     let papAffiliateId = null;
     
     // If the affiliate doesn't exist (404) or there's some other error, we'll create a new one
     if (!getAffiliateResponse.ok) {
-      console.log('No existing affiliate found or error occurred, creating new one');
+      console.log('No existing affiliate found or error occurred, response:', {
+        status: getAffiliateResponse.status,
+        statusText: getAffiliateResponse.statusText
+      });
     } else {
       try {
         const affiliateData = await getAffiliateResponse.json();
+        console.log('Retrieved affiliate data:', affiliateData);
         papAffiliateId = affiliateData.affiliate_id;
       } catch (e) {
         console.log('Error parsing affiliate data:', e);
@@ -46,24 +55,39 @@ serve(async (req) => {
     // If no existing affiliate was found or there was an error, create a new one
     if (!papAffiliateId) {
       console.log('Creating new affiliate');
+      const createPayload = {
+        action: 'createAffiliate',
+        email,
+        name: `${first_name} ${last_name}`.trim(),
+      };
+      
+      console.log('Create affiliate request:', {
+        url: PAP_API_URL,
+        payload: createPayload
+      });
       
       const createAffiliateResponse = await fetch(PAP_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          action: 'createAffiliate',
-          email,
-          name: `${first_name} ${last_name}`.trim(),
-        }),
+        body: JSON.stringify(createPayload),
       });
 
+      console.log('Create affiliate response status:', createAffiliateResponse.status);
+
       if (!createAffiliateResponse.ok) {
-        throw new Error(`Failed to create affiliate: ${createAffiliateResponse.statusText}`);
+        const errorText = await createAffiliateResponse.text();
+        console.error('Failed to create affiliate:', {
+          status: createAffiliateResponse.status,
+          statusText: createAffiliateResponse.statusText,
+          body: errorText
+        });
+        throw new Error(`Failed to create affiliate: ${createAffiliateResponse.statusText || errorText}`);
       }
 
       const newAffiliateData = await createAffiliateResponse.json();
+      console.log('New affiliate created:', newAffiliateData);
       papAffiliateId = newAffiliateData.affiliate_id;
     }
 
