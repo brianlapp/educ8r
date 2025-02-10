@@ -55,7 +55,7 @@ serve(async (req) => {
         terms_accepted: true,
         entry_count: 1
       }, {
-        onConflict: 'email,sweepstakes_id',
+        onConflict: 'unique_email_per_sweepstakes', // Updated to use the constraint name
         ignoreDuplicates: true
       })
       .select()
