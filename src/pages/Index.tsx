@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -106,6 +105,17 @@ const Index = () => {
       });
 
       if (beehiivError) {
+        // Check if it's a duplicate entry error
+        if (beehiivError.message && beehiivError.message.includes('duplicate_entry')) {
+          toast({
+            variant: "destructive",
+            title: "Already Entered",
+            description: "You have already entered this sweepstakes.",
+          });
+          // Still navigate to thank you page with the email
+          navigate(`/thank-you?email=${encodeURIComponent(formData.email)}&sweepstakes_id=${sweepstakes_id}`);
+          return;
+        }
         console.error('Beehiiv sync error:', beehiivError);
         throw beehiivError;
       }

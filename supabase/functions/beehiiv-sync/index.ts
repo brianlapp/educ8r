@@ -48,20 +48,44 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Create sweepstakes entry first
+    // First check if entry already exists
+    const { data: existingEntry, error: checkError } = await supabaseClient
+      .from('sweepstakes_entries')
+      .select('id, entry_count, email')
+      .eq('email', email)
+      .eq('sweepstakes_id', sweepstakes_id)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found" error
+      console.error('Error checking existing entry:', checkError);
+      throw checkError;
+    }
+
+    if (existingEntry) {
+      console.log('Found existing entry:', existingEntry);
+      return new Response(
+        JSON.stringify({
+          error: 'duplicate_entry',
+          message: 'You have already entered this sweepstakes',
+          entry: existingEntry
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
+    }
+
+    // Create sweepstakes entry
     console.log('Creating sweepstakes entry...');
     const { data: entryData, error: entryError } = await supabaseClient
       .from('sweepstakes_entries')
-      .upsert({
+      .insert({
         email,
         first_name,
         last_name,
         sweepstakes_id,
         terms_accepted: true,
         entry_count: 1
-      }, {
-        onConflict: 'unique_email_per_sweepstakes',
-        ignoreDuplicates: true
       })
       .select()
       .single();
@@ -163,6 +187,20 @@ serve(async (req) => {
       name: error.name,
       cause: error.cause
     });
+    
+    // Determine if it's a duplicate entry error
+    if (error.message && error.message.includes('unique_email_per_sweepstakes')) {
+      return new Response(
+        JSON.stringify({
+          error: 'duplicate_entry',
+          message: 'You have already entered this sweepstakes'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
+    }
+    
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
