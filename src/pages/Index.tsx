@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -62,7 +61,39 @@ const Index = () => {
     try {
       console.log('Submitting form data:', formData);
       
-      const { data, error } = await supabase
+      // Store in form_submissions table
+      const { data: submissionData, error: submissionError } = await supabase
+        .from('form_submissions')
+        .insert([
+          {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            processed: false
+          }
+        ])
+        .select();
+
+      if (submissionError) {
+        throw submissionError;
+      }
+
+      // Call Beehiiv edge function
+      const { data: beehiivData, error: beehiivError } = await supabase.functions.invoke('beehiiv-sync', {
+        body: {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email
+        }
+      });
+
+      if (beehiivError) {
+        console.error('Beehiiv sync error:', beehiivError);
+        throw beehiivError;
+      }
+
+      // Store in newsletter_submissions table (keeping existing functionality)
+      const { error: newsletterError } = await supabase
         .from('newsletter_submissions')
         .insert([
           {
@@ -70,14 +101,10 @@ const Index = () => {
             last_name: formData.lastName,
             email: formData.email
           }
-        ])
-        .select();
+        ]);
 
-      console.log('Supabase response:', { data, error });
-
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      if (newsletterError) {
+        throw newsletterError;
       }
 
       toast({
