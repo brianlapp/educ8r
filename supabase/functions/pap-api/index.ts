@@ -29,16 +29,23 @@ serve(async (req) => {
       method: 'GET',
     });
 
+    let papAffiliateId = null;
+    
+    // If the affiliate doesn't exist (404) or there's some other error, we'll create a new one
     if (!getAffiliateResponse.ok) {
-      throw new Error(`Failed to get affiliate ID: ${getAffiliateResponse.statusText}`);
+      console.log('No existing affiliate found or error occurred, creating new one');
+    } else {
+      try {
+        const affiliateData = await getAffiliateResponse.json();
+        papAffiliateId = affiliateData.affiliate_id;
+      } catch (e) {
+        console.log('Error parsing affiliate data:', e);
+      }
     }
 
-    const affiliateData = await getAffiliateResponse.json();
-    let papAffiliateId = affiliateData.affiliate_id;
-
-    // If no existing affiliate, create one
+    // If no existing affiliate was found or there was an error, create a new one
     if (!papAffiliateId) {
-      console.log('No existing affiliate found, creating new one');
+      console.log('Creating new affiliate');
       
       const createAffiliateResponse = await fetch(PAP_API_URL, {
         method: 'POST',
