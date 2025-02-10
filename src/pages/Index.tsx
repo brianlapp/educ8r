@@ -74,6 +74,9 @@ const Index = () => {
 
           <div className="w-full md:w-1/2 min-w-[320px]">
             <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Win a $1,000 School Supply Giveaway</h1>
+              <p className="text-gray-600 mb-6">🎉 Ready to kick off the school year with a bang? Enter our $1,000 School Supply Giveaway for a chance to win everything you need for an awesome academic year! 🎒✏️</p>
+              
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-4">
                   <Input
@@ -104,7 +107,7 @@ const Index = () => {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-semibold py-3 text-lg transition-colors"
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 text-lg transition-colors"
                 >
                   {isLoading ? "Processing..." : "Continue →"}
                 </Button>
