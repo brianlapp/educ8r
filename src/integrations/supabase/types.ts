@@ -226,6 +226,7 @@ export type Database = {
           pap_referral_id: string | null
           postal_code: string | null
           referral_count: number | null
+          referral_url: string | null
           sponsor_signup: boolean | null
           sweepstakes_id: string | null
           terms_accepted: boolean
@@ -246,6 +247,7 @@ export type Database = {
           pap_referral_id?: string | null
           postal_code?: string | null
           referral_count?: number | null
+          referral_url?: string | null
           sponsor_signup?: boolean | null
           sweepstakes_id?: string | null
           terms_accepted?: boolean
@@ -266,6 +268,7 @@ export type Database = {
           pap_referral_id?: string | null
           postal_code?: string | null
           referral_count?: number | null
+          referral_url?: string | null
           sponsor_signup?: boolean | null
           sweepstakes_id?: string | null
           terms_accepted?: boolean
