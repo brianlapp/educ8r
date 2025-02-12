@@ -29,6 +29,8 @@ serve(async (req) => {
       throw new Error('BEEHIIV_API_KEY is not set');
     }
 
+    console.log('BEEHIIV_API_KEY exists (first 4 chars):', BEEHIIV_API_KEY.substring(0, 4));
+
     const { first_name, last_name, email, sweepstakes_id } = await req.json();
     console.log('Received data:', { first_name, last_name, email, sweepstakes_id });
 
@@ -124,6 +126,11 @@ serve(async (req) => {
     console.log('Sending subscription request to Beehiiv with data:', JSON.stringify(subscriberData));
 
     try {
+      console.log('Beehiiv request headers:', {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${BEEHIIV_API_KEY.substring(0, 4)}...`, // Log first 4 chars of API key
+      });
+
       const response = await fetch('https://api.beehiiv.com/v2/subscribers', {
         method: 'POST',
         headers: {
@@ -133,29 +140,32 @@ serve(async (req) => {
         body: JSON.stringify(subscriberData),
       });
 
-      let responseData;
-      const responseText = await response.text();
-      console.log('Raw Beehiiv response:', responseText);
+      console.log('Beehiiv response status:', response.status);
+      console.log('Beehiiv response headers:', Object.fromEntries(response.headers.entries()));
 
+      const responseText = await response.text();
+      console.log('Raw Beehiiv response text:', responseText);
+
+      let responseData;
       try {
-        responseData = JSON.parse(responseText);
+        responseData = responseText ? JSON.parse(responseText) : null;
+        console.log('Parsed Beehiiv response:', responseData);
       } catch (parseError) {
         console.error('Failed to parse Beehiiv response:', parseError);
         throw new Error(`Invalid JSON response from Beehiiv: ${responseText}`);
       }
 
-      console.log('Beehiiv API response:', {
-        status: response.status,
-        body: responseData
-      });
-
       if (!response.ok) {
-        throw new Error(`Beehiiv API error: ${JSON.stringify(responseData)}`);
+        throw new Error(`Beehiiv API error: ${responseText}`);
+      }
+
+      if (!responseData) {
+        throw new Error('No response data from Beehiiv API');
       }
 
       // Update the sweepstakes entry with the Beehiiv subscriber ID
       if (responseData.data && responseData.data.id) {
-        console.log('Updating entry with Beehiiv subscriber ID...');
+        console.log('Updating entry with Beehiiv subscriber ID:', responseData.data.id);
         const { error: updateError } = await supabaseClient
           .from('sweepstakes_entries')
           .update({ beehiiv_subscriber_id: responseData.data.id })
