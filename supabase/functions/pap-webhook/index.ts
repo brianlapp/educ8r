@@ -43,20 +43,29 @@ serve(async (req) => {
       console.log('PAP Affiliate ID:', papAffiliateId);
 
       // First, find the entry with this PAP affiliate ID
-      const { data: entries, error: findError } = await supabaseClient
+      const { data: entry, error: findError } = await supabaseClient
         .from('sweepstakes_entries')
         .select('id, entry_count, sweepstakes_id')
         .eq('pap_affiliate_id', papAffiliateId)
-        .single();
+        .maybeSingle();
 
       if (findError) {
         console.error('Error finding entry:', findError);
         throw findError;
       }
 
-      if (!entries) {
+      if (!entry) {
         console.error('No entry found for PAP affiliate ID:', papAffiliateId);
-        throw new Error('Entry not found');
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'No entry found with the provided affiliate ID' 
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 404
+          }
+        );
       }
 
       // Then, increment referral count for the referrer's entry
