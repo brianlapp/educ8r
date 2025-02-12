@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -28,12 +29,25 @@ serve(async (req) => {
       throw new Error('BEEHIIV_API_KEY is not set');
     }
 
-    // Validate request body
+    // Check content type
+    const contentType = req.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Content-Type must be application/json',
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Parse request body
     let requestBody;
     try {
-      const rawBody = await req.text();
-      console.log('Raw request body:', rawBody);
-      requestBody = JSON.parse(rawBody);
+      requestBody = await req.json();
+      console.log('Request body:', requestBody);
     } catch (error) {
       console.error('Failed to parse request body:', error);
       return new Response(
@@ -116,62 +130,11 @@ serve(async (req) => {
 
     console.log('Sweepstakes entry created:', entryData);
 
-    // First, check if subscriber already exists and get their current entry count
-    const subscriberUrl = `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions/email/${encodeURIComponent(email)}`;
+    // Subscribe to Beehiiv
     const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
     };
-
-    console.log('Fetching existing subscriber data...');
-    const subscriberResponse = await fetch(subscriberUrl, {
-      method: 'GET',
-      headers,
-    });
-
-    let currentEntryCount = 0;
-    let existingSubscriberId = null;
-    
-    if (subscriberResponse.ok) {
-      const subscriberData = await subscriberResponse.json();
-      console.log('Existing subscriber data:', JSON.stringify(subscriberData, null, 2));
-
-      if (subscriberData.data?.id) {
-        existingSubscriberId = subscriberData.data.id;
-      }
-
-      // Try to get the current entry count from custom fields
-      if (subscriberData.data?.custom_fields) {
-        const entriesField = subscriberData.data.custom_fields.find(
-          (field: { id: string }) => field.id === 'sweepstakes_entries'
-        );
-        if (entriesField) {
-          currentEntryCount = parseInt(entriesField.value, 10) || 0;
-          console.log('Current entry count:', currentEntryCount);
-        }
-      }
-    } else {
-      console.log('No existing subscriber found or error fetching data:', {
-        status: subscriberResponse.status,
-        statusText: subscriberResponse.statusText,
-        body: await subscriberResponse.text()
-      });
-    }
-
-    // Increment the entry count
-    const newEntryCount = currentEntryCount + 1;
-    console.log('New entry count:', newEntryCount);
-
-    // Format the custom fields according to Beehiiv API requirements
-    const customFields = [
-      {
-        id: "sweepstakes_entries",
-        value: String(newEntryCount)
-      }
-    ];
-
-    // Add debug logging for custom fields
-    console.log('Custom fields being sent to Beehiiv:', JSON.stringify(customFields, null, 2));
 
     // Define base tags
     const tags = ['sweeps', 'Comprendi-sweeps'];
@@ -186,11 +149,10 @@ serve(async (req) => {
       utm_campaign: 'Comprendi-sweeps',
       send_welcome_email: true,
       reactivate_existing: true,
-      custom_fields: customFields,
       tags
     };
 
-    console.log('Full Beehiiv subscription data:', JSON.stringify(subscriberData, null, 2));
+    console.log('Beehiiv subscription data:', subscriberData);
 
     const beehiivUrl = `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`;
     
@@ -200,97 +162,20 @@ serve(async (req) => {
       body: JSON.stringify(subscriberData),
     });
 
-    // Enhanced response logging
-    const responseHeaders = Object.fromEntries(response.headers.entries());
-    console.log('Beehiiv API Response Headers:', responseHeaders);
-    console.log('Beehiiv API Response Status:', response.status);
-    console.log('Beehiiv API Response Status Text:', response.statusText);
-
     const responseData = await response.json();
-    console.log('Beehiiv API Response Body:', JSON.stringify(responseData, null, 2));
+    console.log('Beehiiv API Response:', {
+      status: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: responseData
+    });
 
     if (!response.ok) {
-      console.error('Beehiiv API error details:', {
-        status: response.status,
-        statusText: response.statusText,
-        headers: responseHeaders,
-        body: responseData
-      });
       throw new Error(`Beehiiv API error: ${JSON.stringify(responseData)}`);
-    }
-
-    // Get the subscriber ID from the response or use existing one
-    const subscriberId = responseData.data?.id || existingSubscriberId;
-
-    if (subscriberId) {
-      // Make a separate API call to update custom fields
-      const customFieldsUrl = `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions/${subscriberId}/custom_fields`;
-      console.log('Making separate custom fields update call to:', customFieldsUrl);
-      
-      const customFieldsResponse = await fetch(customFieldsUrl, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({ custom_fields: customFields }),
-      });
-
-      // Log custom fields update response
-      const customFieldsResponseHeaders = Object.fromEntries(customFieldsResponse.headers.entries());
-      const customFieldsResponseData = await customFieldsResponse.json();
-      
-      console.log('Custom Fields Update Response:', {
-        status: customFieldsResponse.status,
-        statusText: customFieldsResponse.statusText,
-        headers: customFieldsResponseHeaders,
-        body: customFieldsResponseData
-      });
-
-      if (!customFieldsResponse.ok) {
-        console.warn('Warning: Failed to update custom fields:', customFieldsResponseData);
-      }
-    }
-
-    // Update the sweepstakes entry with the Beehiiv subscriber ID
-    if (subscriberId) {
-      console.log('Updating entry with Beehiiv subscriber ID...');
-      const { error: updateError } = await supabaseClient
-        .from('sweepstakes_entries')
-        .update({ beehiiv_subscriber_id: subscriberId })
-        .eq('id', entryData.id);
-
-      if (updateError) {
-        console.warn('Warning: Failed to update Beehiiv subscriber ID:', updateError);
-      }
-    }
-
-    // Add tags explicitly
-    if (subscriberId) {
-      const tagsUrl = `${beehiivUrl}/${subscriberId}/tags`;
-      console.log('Adding tags to subscriber...');
-      
-      const tagsResponse = await fetch(tagsUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ tags }),
-      });
-
-      // Log tags update response
-      const tagsResponseData = await tagsResponse.json();
-      console.log('Tags Update Response:', {
-        status: tagsResponse.status,
-        statusText: tagsResponse.statusText,
-        body: tagsResponseData
-      });
-
-      if (!tagsResponse.ok) {
-        console.warn('Warning: Failed to add tags:', tagsResponseData);
-      }
     }
 
     return new Response(JSON.stringify({
       beehiiv: responseData,
-      entry: entryData,
-      previous_entry_count: currentEntryCount,
-      new_entry_count: newEntryCount
+      entry: entryData
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200
