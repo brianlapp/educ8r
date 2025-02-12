@@ -97,11 +97,49 @@ serve(async (req) => {
 
     console.log('Sweepstakes entry created:', entryData);
 
+    // First, check if subscriber already exists and get their current entry count
+    const subscriberUrl = `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions/email/${encodeURIComponent(email)}`;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
+    };
+
+    console.log('Fetching existing subscriber data...');
+    const subscriberResponse = await fetch(subscriberUrl, {
+      method: 'GET',
+      headers,
+    });
+
+    let currentEntryCount = 0;
+    
+    if (subscriberResponse.ok) {
+      const subscriberData = await subscriberResponse.json();
+      console.log('Existing subscriber data:', JSON.stringify(subscriberData, null, 2));
+
+      // Try to get the current entry count from custom fields
+      if (subscriberData.data?.custom_fields) {
+        const entriesField = subscriberData.data.custom_fields.find(
+          (field: { id: string }) => field.id === 'sweepstakes_entries'
+        );
+        if (entriesField) {
+          // Convert the string value to number, default to 0 if parsing fails
+          currentEntryCount = parseInt(entriesField.value, 10) || 0;
+          console.log('Current entry count:', currentEntryCount);
+        }
+      }
+    } else {
+      console.log('No existing subscriber found or error fetching data, starting count at 0');
+    }
+
+    // Increment the entry count
+    const newEntryCount = currentEntryCount + 1;
+    console.log('New entry count:', newEntryCount);
+
     // Format the custom fields according to Beehiiv API requirements
     const customFields = [
       {
         id: "sweepstakes_entries",
-        value: "1"
+        value: String(newEntryCount) // Convert to string for TEXT field requirement
       }
     ];
 
@@ -128,11 +166,7 @@ serve(async (req) => {
     console.log('Full Beehiiv subscription data:', JSON.stringify(subscriberData, null, 2));
 
     const beehiivUrl = `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`;
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
-    };
-
+    
     const response = await fetch(beehiivUrl, {
       method: 'POST',
       headers,
@@ -182,7 +216,9 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       beehiiv: responseData,
-      entry: entryData
+      entry: entryData,
+      previous_entry_count: currentEntryCount,
+      new_entry_count: newEntryCount
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200
