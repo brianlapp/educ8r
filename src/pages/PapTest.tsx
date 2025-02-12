@@ -39,6 +39,29 @@ const PapTest = () => {
     }
   };
 
+  const testClick = async () => {
+    if (!referralId) {
+      toast.error("Please enter a Referral ID");
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('pap-webhook', {
+        body: {
+          type: 'click',
+          sweeps: referralId
+        }
+      });
+
+      if (error) throw error;
+      toast.success("Click test successful!");
+      console.log("Click test response:", data);
+    } catch (error) {
+      console.error("Error testing click:", error);
+      toast.error("Click test failed");
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-xl mx-auto space-y-8">
@@ -60,6 +83,30 @@ const PapTest = () => {
             </div>
 
             <div>
+              <h2 className="text-lg font-semibold mb-2">Test Actions</h2>
+              <div className="space-y-2">
+                <div>
+                  <Button
+                    onClick={testClick}
+                    disabled={!referralId}
+                    className="w-full mb-2"
+                  >
+                    Test Click
+                  </Button>
+                </div>
+                <div>
+                  <Button
+                    onClick={simulateConversion}
+                    disabled={isLoading || !referralId}
+                    className="w-full"
+                  >
+                    {isLoading ? "Simulating..." : "Simulate Conversion"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div>
               <h2 className="text-lg font-semibold mb-2">Test Links</h2>
               <div className="space-y-2">
                 <div>
@@ -77,16 +124,6 @@ const PapTest = () => {
                 </div>
               </div>
             </div>
-
-            <div className="flex flex-col gap-2">
-              <Button
-                onClick={simulateConversion}
-                disabled={isLoading || !referralId}
-                className="w-full"
-              >
-                {isLoading ? "Simulating..." : "Simulate Conversion"}
-              </Button>
-            </div>
           </div>
         </div>
 
@@ -96,7 +133,8 @@ const PapTest = () => {
             <li>Go to the main form and submit your entry with your real email</li>
             <li>Copy your Referral ID from the thank you page</li>
             <li>Paste your Referral ID above</li>
-            <li>Use the "Simulate Conversion" button to test the referral system</li>
+            <li>Use the "Test Click" button to test click tracking</li>
+            <li>Use "Simulate Conversion" to test conversion tracking</li>
             <li>Check your Beehiiv dashboard to verify the subscriber update</li>
           </ol>
         </div>
