@@ -29,13 +29,7 @@ serve(async (req) => {
       throw new Error('BEEHIIV_API_KEY is not set');
     }
 
-    // Validate API key format
-    if (!BEEHIIV_API_KEY.startsWith('bhv_')) {
-      console.error('Invalid BEEHIIV_API_KEY format');
-      throw new Error('Invalid BEEHIIV_API_KEY format - should start with bhv_');
-    }
-
-    console.log('BEEHIIV_API_KEY exists (first 4 chars):', BEEHIIV_API_KEY.substring(0, 4));
+    console.log('BEEHIIV_API_KEY exists');
 
     const { first_name, last_name, email, sweepstakes_id } = await req.json();
     console.log('Received data:', { first_name, last_name, email, sweepstakes_id });
@@ -149,11 +143,6 @@ serve(async (req) => {
       }
 
       // Proceed with subscriber creation
-      console.log('Beehiiv request headers:', {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${BEEHIIV_API_KEY.substring(0, 4)}...`,
-      });
-
       const response = await fetch('https://api.beehiiv.com/v2/subscribers', {
         method: 'POST',
         headers: {
