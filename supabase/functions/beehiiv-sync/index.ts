@@ -101,7 +101,7 @@ serve(async (req) => {
     const customFields = [
       { id: 'first_name', value: first_name || '' },
       { id: 'last_name', value: last_name || '' },
-      { id: 'sweeps_entry', value: '1' }
+      // Remove the sweeps_entry custom field for now until we get the correct ID
     ];
 
     // Add debug logging for custom fields
