@@ -123,45 +123,65 @@ serve(async (req) => {
 
     console.log('Sending subscription request to Beehiiv with data:', JSON.stringify(subscriberData));
 
-    const response = await fetch('https://api.beehiiv.com/v2/subscribers', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
-      },
-      body: JSON.stringify(subscriberData),
-    });
+    try {
+      const response = await fetch('https://api.beehiiv.com/v2/subscribers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
+        },
+        body: JSON.stringify(subscriberData),
+      });
 
-    const responseData = await response.json();
-    console.log('Beehiiv API response:', {
-      status: response.status,
-      body: responseData
-    });
+      let responseData;
+      const responseText = await response.text();
+      console.log('Raw Beehiiv response:', responseText);
 
-    if (!response.ok) {
-      throw new Error(`Beehiiv API error: ${JSON.stringify(responseData)}`);
-    }
-
-    // Update the sweepstakes entry with the Beehiiv subscriber ID
-    if (responseData.data && responseData.data.id) {
-      console.log('Updating entry with Beehiiv subscriber ID...');
-      const { error: updateError } = await supabaseClient
-        .from('sweepstakes_entries')
-        .update({ beehiiv_subscriber_id: responseData.data.id })
-        .eq('id', entryData.id);
-
-      if (updateError) {
-        console.warn('Warning: Failed to update Beehiiv subscriber ID:', updateError);
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse Beehiiv response:', parseError);
+        throw new Error(`Invalid JSON response from Beehiiv: ${responseText}`);
       }
-    }
 
-    return new Response(JSON.stringify({
-      beehiiv: responseData,
-      entry: entryData
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200
-    });
+      console.log('Beehiiv API response:', {
+        status: response.status,
+        body: responseData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Beehiiv API error: ${JSON.stringify(responseData)}`);
+      }
+
+      // Update the sweepstakes entry with the Beehiiv subscriber ID
+      if (responseData.data && responseData.data.id) {
+        console.log('Updating entry with Beehiiv subscriber ID...');
+        const { error: updateError } = await supabaseClient
+          .from('sweepstakes_entries')
+          .update({ beehiiv_subscriber_id: responseData.data.id })
+          .eq('id', entryData.id);
+
+        if (updateError) {
+          console.warn('Warning: Failed to update Beehiiv subscriber ID:', updateError);
+        }
+      }
+
+      return new Response(JSON.stringify({
+        beehiiv: responseData,
+        entry: entryData
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      });
+    } catch (beehiivError) {
+      console.error('Beehiiv API error details:', {
+        name: beehiivError.name,
+        message: beehiivError.message,
+        stack: beehiivError.stack,
+        cause: beehiivError.cause
+      });
+      throw beehiivError;
+    }
   } catch (error) {
     console.error('Error in beehiiv-sync:', {
       message: error.message,
