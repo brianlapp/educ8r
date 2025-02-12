@@ -23,9 +23,12 @@ serve(async (req) => {
 
     const createCustomField = async () => {
       const customFieldData = {
-        kind: "string",
+        name: "Sweepstakes Entry",
+        kind: "number",
         display: "Sweepstakes Entry"
       };
+
+      console.log('Creating custom field with data:', customFieldData);
 
       const response = await fetch(
         `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/custom_fields`,
