@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -98,7 +99,7 @@ serve(async (req) => {
 
     // Format the custom fields for Beehiiv - using the exact field ID from Beehiiv
     const customFields = [
-      { id: 'sweepstakes-entry', value: String(entryData.entry_count) }, // Changed from sweeps-entry to sweepstakes-entry
+      { id: 'sweepstakes_entry', value: String(entryData.entry_count) }, // Changed to use underscore instead of hyphen
       { id: 'first_name', value: first_name || '' },
       { id: 'last_name', value: last_name || '' }
     ];
