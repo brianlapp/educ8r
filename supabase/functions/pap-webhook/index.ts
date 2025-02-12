@@ -42,19 +42,10 @@ serve(async (req) => {
 
       console.log('Referral ID:', referralId);
 
-      // First, let's debug what entries exist
-      const { data: allEntries, error: listError } = await supabaseClient
-        .from('sweepstakes_entries')
-        .select('id, pap_referral_id')
-        .limit(5);
-
-      console.log('Sample entries in database:', allEntries);
-      console.log('List error if any:', listError);
-
       // Then try to find our specific entry
       const { data: entry, error: findError } = await supabaseClient
         .from('sweepstakes_entries')
-        .select('id, entry_count, sweepstakes_id, email, pap_referral_id')
+        .select('id, entry_count, sweepstakes_id, email, pap_referral_id, beehiiv_subscriber_id')
         .eq('pap_referral_id', referralId)
         .maybeSingle();
 
@@ -88,6 +79,58 @@ serve(async (req) => {
       if (entryError) {
         console.error('Error incrementing referral count:', entryError);
         throw entryError;
+      }
+
+      // After incrementing, get the updated entry count
+      const { data: updatedEntry, error: updateError } = await supabaseClient
+        .from('sweepstakes_entries')
+        .select('entry_count, beehiiv_subscriber_id')
+        .eq('id', entry.id)
+        .single();
+
+      if (updateError) {
+        console.error('Error getting updated entry:', updateError);
+        throw updateError;
+      }
+
+      if (updatedEntry?.beehiiv_subscriber_id) {
+        const BEEHIIV_API_KEY = Deno.env.get('BEEHIIV_API_KEY');
+        if (!BEEHIIV_API_KEY) {
+          console.error('BEEHIIV_API_KEY not set');
+          throw new Error('BEEHIIV_API_KEY not configured');
+        }
+
+        try {
+          console.log('Updating Beehiiv subscriber with entry count:', updatedEntry.entry_count);
+          
+          // Update Beehiiv subscriber custom fields with the entry count
+          const beehiivResponse = await fetch(
+            `https://api.beehiiv.com/v2/subscribers/${updatedEntry.beehiiv_subscriber_id}`,
+            {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
+              },
+              body: JSON.stringify({
+                custom_fields: {
+                  'sweeps-entry': updatedEntry.entry_count
+                }
+              })
+            }
+          );
+
+          if (!beehiivResponse.ok) {
+            const errorData = await beehiivResponse.text();
+            console.error('Beehiiv API error:', errorData);
+            throw new Error(`Failed to update Beehiiv subscriber: ${errorData}`);
+          }
+
+          console.log('Successfully updated Beehiiv custom field');
+        } catch (beehiivError) {
+          console.error('Error syncing with Beehiiv:', beehiivError);
+          // Don't throw here - we still want to count the conversion
+        }
       }
 
       console.log('Successfully processed PAP click');
@@ -132,7 +175,7 @@ serve(async (req) => {
         // Find the original entry that made this referral
         const { data: referrerEntry, error: findError } = await supabaseClient
           .from('sweepstakes_entries')
-          .select('id, beehiiv_subscriber_id')
+          .select('id, beehiiv_subscriber_id, entry_count')
           .eq('pap_referral_id', referrerId)
           .maybeSingle();
 
@@ -149,7 +192,7 @@ serve(async (req) => {
           }
 
           try {
-            // Update Beehiiv subscriber custom fields for the extra entry
+            // Update Beehiiv subscriber custom fields with the current entry count
             const beehiivResponse = await fetch(
               `https://api.beehiiv.com/v2/subscribers/${referrerEntry.beehiiv_subscriber_id}`,
               {
@@ -160,7 +203,7 @@ serve(async (req) => {
                 },
                 body: JSON.stringify({
                   custom_fields: {
-                    sweeps_entry: 'extra_entry'
+                    'sweeps-entry': referrerEntry.entry_count
                   }
                 })
               }
@@ -172,19 +215,8 @@ serve(async (req) => {
               throw new Error(`Failed to update Beehiiv subscriber: ${errorData}`);
             }
 
-            // Mark the entry as synced in our database
-            const { error: syncError } = await supabaseClient
-              .from('sweepstakes_entries')
-              .update({
-                beehiiv_entry_synced: true,
-                beehiiv_entry_synced_at: new Date().toISOString()
-              })
-              .eq('id', referrerEntry.id);
+            console.log('Successfully updated Beehiiv custom field with entry count');
 
-            if (syncError) {
-              console.error('Error marking entry as synced:', syncError);
-              throw syncError;
-            }
           } catch (beehiivError) {
             console.error('Error syncing with Beehiiv:', beehiivError);
             // Don't throw here - we still want to count the conversion
