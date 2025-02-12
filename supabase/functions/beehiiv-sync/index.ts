@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -99,7 +100,7 @@ serve(async (req) => {
     // Format the custom fields for Beehiiv as an array of objects
     const customFields = [
       {
-        id: 'sweepstakes_entry',
+        id: 'sweepstakes_entries',
         value: String(entryData.entry_count)
       },
       {
