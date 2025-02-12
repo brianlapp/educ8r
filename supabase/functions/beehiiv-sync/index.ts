@@ -104,6 +104,9 @@ serve(async (req) => {
       { id: 'sweeps-entry', value: '1' }  // Add the sweeps-entry field
     ];
 
+    // Add debug logging for custom fields
+    console.log('Custom fields being sent to Beehiiv:', JSON.stringify(customFields, null, 2));
+
     // Define base tags
     const tags = ['sweeps', 'Comprendi-sweeps'];
 
@@ -121,7 +124,7 @@ serve(async (req) => {
       tags
     };
 
-    console.log('Sending subscription request to Beehiiv with body:', JSON.stringify(subscriberData));
+    console.log('Full Beehiiv subscription data:', JSON.stringify(subscriberData, null, 2));
 
     const beehiivUrl = `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`;
     const headers = {
@@ -136,12 +139,14 @@ serve(async (req) => {
     });
 
     const responseData = await response.json();
-    console.log('Beehiiv API response:', {
-      status: response.status,
-      body: responseData
-    });
+    console.log('Beehiiv API complete response:', JSON.stringify(responseData, null, 2));
 
     if (!response.ok) {
+      console.error('Beehiiv API error details:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: responseData
+      });
       throw new Error(`Beehiiv API error: ${JSON.stringify(responseData)}`);
     }
 
