@@ -97,19 +97,11 @@ serve(async (req) => {
 
     console.log('Sweepstakes entry created:', entryData);
 
-    // Format the custom fields for Beehiiv as an array of objects
+    // Format the custom fields according to Beehiiv API requirements
     const customFields = [
       {
-        id: 'sweepstakes_entries',
-        value: String(entryData.entry_count)
-      },
-      {
-        id: 'first_name',
-        value: first_name || ''
-      },
-      {
-        id: 'last_name',
-        value: last_name || ''
+        id: "sweepstakes_entries",
+        value: "1"
       }
     ];
 
