@@ -103,11 +103,13 @@ serve(async (req) => {
         }
 
         try {
-          const customFields = [
-            { id: 'sweeps-entry', value: String(updatedEntry.entry_count) }
-          ];
+          const updatePayload = {
+            custom_fields: {
+              'sweeps-entry': Number(updatedEntry.entry_count)
+            }
+          };
           
-          console.log('Sending Beehiiv update with custom fields:', customFields);
+          console.log('Sending Beehiiv update with payload:', updatePayload);
           console.log('Subscriber ID:', updatedEntry.beehiiv_subscriber_id);
           
           // Update Beehiiv subscriber custom fields with the entry count
@@ -119,9 +121,7 @@ serve(async (req) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
               },
-              body: JSON.stringify({
-                custom_fields: customFields
-              })
+              body: JSON.stringify(updatePayload)
             }
           );
 
@@ -205,10 +205,6 @@ serve(async (req) => {
           }
 
           try {
-            const customFields = [
-              { id: 'sweeps-entry', value: String(referrerEntry.entry_count) }
-            ];
-
             // Update Beehiiv subscriber custom fields with the current entry count
             const beehiivResponse = await fetch(
               `https://api.beehiiv.com/v2/subscribers/${referrerEntry.beehiiv_subscriber_id}`,
@@ -219,7 +215,9 @@ serve(async (req) => {
                   'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
                 },
                 body: JSON.stringify({
-                  custom_fields: customFields
+                  custom_fields: {
+                    'sweeps-entry': referrerEntry.entry_count
+                  }
                 })
               }
             );

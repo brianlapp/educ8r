@@ -82,19 +82,16 @@ export const EntryForm = () => {
         }
       });
 
-      // Handle the case where we get a duplicate entry response
-      if (!beehiivError && beehiivData?.error === 'duplicate_entry') {
-        toast({
-          variant: "destructive",
-          title: "Already Entered",
-          description: "You have already entered this sweepstakes.",
-        });
-        navigate(`/thank-you?email=${encodeURIComponent(formData.email)}&sweepstakes_id=${sweepstakes_id}`);
-        return;
-      }
-
-      // Handle any other errors
       if (beehiivError) {
+        if (beehiivError.message && beehiivError.message.includes('duplicate_entry')) {
+          toast({
+            variant: "destructive",
+            title: "Already Entered",
+            description: "You have already entered this sweepstakes.",
+          });
+          navigate(`/thank-you?email=${encodeURIComponent(formData.email)}&sweepstakes_id=${sweepstakes_id}`);
+          return;
+        }
         console.error('Beehiiv sync error:', beehiivError);
         throw beehiivError;
       }
@@ -119,33 +116,8 @@ export const EntryForm = () => {
       });
       
       navigate(`/thank-you?email=${encodeURIComponent(formData.email)}&sweepstakes_id=${sweepstakes_id}`);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error:', error);
-      
-      // Check if it's a duplicate entry error from the response body
-      if (error.message && typeof error.message === 'string') {
-        try {
-          const errorBody = JSON.parse(error.message);
-          if (errorBody.error === 'duplicate_entry') {
-            const { data: sweepstakesData } = await supabase
-              .from('sweepstakes')
-              .select()
-              .eq('is_active', true)
-              .single();
-              
-            toast({
-              variant: "destructive",
-              title: "Already Entered",
-              description: "You have already entered this sweepstakes.",
-            });
-            navigate(`/thank-you?email=${encodeURIComponent(formData.email)}&sweepstakes_id=${sweepstakesData.id}`);
-            return;
-          }
-        } catch (parseError) {
-          // If we can't parse the error message, fall through to generic error
-        }
-      }
-      
       toast({
         variant: "destructive",
         title: "Error",
