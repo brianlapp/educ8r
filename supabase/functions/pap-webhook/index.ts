@@ -16,13 +16,13 @@ serve(async (req) => {
   try {
     console.log('PAP webhook received');
     
-    // Parse request body
+    // Parse request body once
     const body = await req.json();
-    const { type, sweeps } = body;
-    
-    console.log('Event type:', type);
-    console.log('Sweeps param:', sweeps);
+    console.log('Webhook payload:', body);
 
+    const { type, sweeps } = body;
+    console.log('Event type:', type);
+    
     // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -32,6 +32,7 @@ serve(async (req) => {
     // Handle click events
     if (type === 'click' && sweeps) {
       console.log('Processing click event');
+      console.log('Sweeps param:', sweeps);
 
       // Extract affiliate ID from sweeps parameter
       const papAffiliateId = sweeps;
@@ -82,15 +83,12 @@ serve(async (req) => {
     
     // Handle commission/conversion events
     if (type !== 'click') {
-      const data = await req.json();
-      console.log('Webhook payload:', data);
-
       const {
         refid: papReferrerId,
         clickid: papTrackingId,
         commission_status: status,
         email: referredEmail
-      } = data;
+      } = body;
 
       if (!papReferrerId || !papTrackingId || !status || !referredEmail) {
         throw new Error('Missing required fields in PAP webhook payload');
