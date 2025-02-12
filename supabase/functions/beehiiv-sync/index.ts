@@ -126,22 +126,6 @@ serve(async (req) => {
     console.log('Sending subscription request to Beehiiv with data:', JSON.stringify(subscriberData));
 
     try {
-      // Validate API key by fetching the publication we're actually going to use
-      const testResponse = await fetch(`https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
-        }
-      });
-
-      console.log('Test API response status:', testResponse.status);
-      const testResponseText = await testResponse.text();
-      console.log('Test API response:', testResponseText);
-
-      if (!testResponse.ok) {
-        throw new Error(`Failed to validate Beehiiv API key: ${testResponseText}`);
-      }
-
       // Proceed with subscriber creation
       const response = await fetch('https://api.beehiiv.com/v2/subscribers', {
         method: 'POST',
