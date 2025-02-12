@@ -14,7 +14,7 @@ const PapTestClick = () => {
       const sweepsParam = searchParams.get('sweeps');
       
       if (!sweepsParam) {
-        setResult("Error: No sweeps parameter found");
+        setResult("Error: No referral ID found");
         setIsProcessing(false);
         return;
       }
@@ -48,7 +48,7 @@ const PapTestClick = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold text-center mb-4">PAP Click Test</h1>
+        <h1 className="text-2xl font-bold text-center mb-4">Referral Click Test</h1>
         
         {isProcessing ? (
           <div className="text-center">
@@ -71,3 +71,4 @@ const PapTestClick = () => {
 };
 
 export default PapTestClick;
+

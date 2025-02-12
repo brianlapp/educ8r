@@ -6,19 +6,19 @@ import { supabase } from "@/integrations/supabase/client";
 
 const PapTest = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [papReferrerId, setPapReferrerId] = useState("");
+  const [referralId, setReferralId] = useState("");
   const [isCreatingEntry, setIsCreatingEntry] = useState(false);
 
   const simulateConversion = async () => {
-    if (!papReferrerId) {
-      toast.error("Please enter a PAP Referrer ID");
+    if (!referralId) {
+      toast.error("Please enter a Referral ID");
       return;
     }
 
     setIsLoading(true);
     try {
       const testData = {
-        refid: papReferrerId,
+        refid: referralId,
         clickid: `test_click_${Date.now()}`,
         commission_status: 'approved',
         email: 'test@example.com'
@@ -41,8 +41,8 @@ const PapTest = () => {
   };
 
   const createTestEntry = async () => {
-    if (!papReferrerId) {
-      toast.error("Please enter a PAP Referrer ID");
+    if (!referralId) {
+      toast.error("Please enter a Referral ID");
       return;
     }
 
@@ -55,11 +55,11 @@ const PapTest = () => {
           last_name: 'User',
           email: 'test@example.com',
           terms_accepted: true,
-          pap_affiliate_id: papReferrerId,
+          pap_referral_id: referralId,
           beehiiv_subscriber_id: 'test_subscriber_123' // Adding this for Beehiiv testing
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -77,19 +77,19 @@ const PapTest = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-xl mx-auto space-y-8">
         <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h1 className="text-2xl font-bold mb-6">PAP Integration Test</h1>
+          <h1 className="text-2xl font-bold mb-6">Referral Testing Tool</h1>
           
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                PAP Referrer ID
+                Referral ID
               </label>
               <input
                 type="text"
-                value={papReferrerId}
-                onChange={(e) => setPapReferrerId(e.target.value)}
+                value={referralId}
+                onChange={(e) => setReferralId(e.target.value)}
                 className="w-full p-2 border rounded"
-                placeholder="Enter PAP Referrer ID"
+                placeholder="Enter Referral ID"
               />
             </div>
 
@@ -99,7 +99,7 @@ const PapTest = () => {
                 <div>
                   <p className="text-sm font-medium">Click Test URL:</p>
                   <code className="block bg-gray-100 p-2 rounded text-sm break-all">
-                    {`${window.location.origin}/pap-test-click?sweeps=${papReferrerId}`}
+                    {`${window.location.origin}/pap-test-click?sweeps=${referralId}`}
                   </code>
                 </div>
                 
@@ -115,7 +115,7 @@ const PapTest = () => {
             <div className="flex flex-col gap-2">
               <Button
                 onClick={createTestEntry}
-                disabled={isCreatingEntry || !papReferrerId}
+                disabled={isCreatingEntry || !referralId}
                 className="w-full"
                 variant="outline"
               >
@@ -124,7 +124,7 @@ const PapTest = () => {
 
               <Button
                 onClick={simulateConversion}
-                disabled={isLoading || !papReferrerId}
+                disabled={isLoading || !referralId}
                 className="w-full"
               >
                 {isLoading ? "Simulating..." : "2. Simulate Conversion"}
@@ -136,7 +136,7 @@ const PapTest = () => {
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <h2 className="text-lg font-semibold mb-4">Testing Instructions</h2>
           <ol className="list-decimal list-inside space-y-2 text-sm">
-            <li>Enter a PAP Referrer ID above</li>
+            <li>Enter a Referral ID above</li>
             <li>Click "Create Test Entry" to create an entry in the database</li>
             <li>Copy the Click Test URL and visit it in a new tab</li>
             <li>The test page will process the click and show results</li>
@@ -150,3 +150,4 @@ const PapTest = () => {
 };
 
 export default PapTest;
+
