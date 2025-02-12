@@ -100,7 +100,8 @@ serve(async (req) => {
     // Format the custom fields for Beehiiv
     const customFields = [
       { id: 'first_name', value: first_name || '' },
-      { id: 'last_name', value: last_name || '' }
+      { id: 'last_name', value: last_name || '' },
+      { id: 'sweeps-entry', value: '1' }  // Add the sweeps-entry field
     ];
 
     // Define base tags
