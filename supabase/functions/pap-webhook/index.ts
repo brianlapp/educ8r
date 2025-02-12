@@ -93,6 +93,8 @@ serve(async (req) => {
         throw updateError;
       }
 
+      console.log('Updated entry data:', updatedEntry);
+
       if (updatedEntry?.beehiiv_subscriber_id) {
         const BEEHIIV_API_KEY = Deno.env.get('BEEHIIV_API_KEY');
         if (!BEEHIIV_API_KEY) {
@@ -101,7 +103,14 @@ serve(async (req) => {
         }
 
         try {
-          console.log('Updating Beehiiv subscriber with entry count:', updatedEntry.entry_count);
+          const updatePayload = {
+            custom_fields: {
+              'sweeps-entry': Number(updatedEntry.entry_count)
+            }
+          };
+          
+          console.log('Sending Beehiiv update with payload:', updatePayload);
+          console.log('Subscriber ID:', updatedEntry.beehiiv_subscriber_id);
           
           // Update Beehiiv subscriber custom fields with the entry count
           const beehiivResponse = await fetch(
@@ -112,23 +121,27 @@ serve(async (req) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
               },
-              body: JSON.stringify({
-                custom_fields: {
-                  'sweeps-entry': updatedEntry.entry_count
-                }
-              })
+              body: JSON.stringify(updatePayload)
             }
           );
 
+          const responseText = await beehiivResponse.text();
+          console.log('Beehiiv API response status:', beehiivResponse.status);
+          console.log('Beehiiv API response body:', responseText);
+
           if (!beehiivResponse.ok) {
-            const errorData = await beehiivResponse.text();
-            console.error('Beehiiv API error:', errorData);
-            throw new Error(`Failed to update Beehiiv subscriber: ${errorData}`);
+            throw new Error(`Failed to update Beehiiv subscriber: ${responseText}`);
           }
 
           console.log('Successfully updated Beehiiv custom field');
         } catch (beehiivError) {
           console.error('Error syncing with Beehiiv:', beehiivError);
+          console.error('Full error details:', {
+            name: beehiivError.name,
+            message: beehiivError.message,
+            stack: beehiivError.stack,
+            cause: beehiivError.cause
+          });
           // Don't throw here - we still want to count the conversion
         }
       }
@@ -236,6 +249,12 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in pap-webhook:', error);
+    console.error('Full error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      cause: error.cause
+    });
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
