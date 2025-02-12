@@ -101,7 +101,7 @@ serve(async (req) => {
     const customFields = [
       { id: 'first_name', value: first_name || '' },
       { id: 'last_name', value: last_name || '' },
-      { id: 'sweeps-entry', value: '1' }  // Add the sweeps-entry field
+      { id: 'sweeps_entry', value: '1' }  // Changed from sweeps-entry to sweeps_entry
     ];
 
     // Add debug logging for custom fields
