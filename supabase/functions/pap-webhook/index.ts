@@ -42,10 +42,19 @@ serve(async (req) => {
 
       console.log('Referral ID:', referralId);
 
-      // Find the entry with this referral ID
+      // First, let's debug what entries exist
+      const { data: allEntries, error: listError } = await supabaseClient
+        .from('sweepstakes_entries')
+        .select('id, pap_referral_id')
+        .limit(5);
+
+      console.log('Sample entries in database:', allEntries);
+      console.log('List error if any:', listError);
+
+      // Then try to find our specific entry
       const { data: entry, error: findError } = await supabaseClient
         .from('sweepstakes_entries')
-        .select('id, entry_count, sweepstakes_id, email')
+        .select('id, entry_count, sweepstakes_id, email, pap_referral_id')
         .eq('pap_referral_id', referralId)
         .maybeSingle();
 
@@ -53,6 +62,8 @@ serve(async (req) => {
         console.error('Error finding entry:', findError);
         throw findError;
       }
+
+      console.log('Found entry:', entry);
 
       if (!entry) {
         console.error('No entry found for referral ID:', referralId);
@@ -68,7 +79,7 @@ serve(async (req) => {
         );
       }
 
-      // Then, increment referral count for the referrer's entry using the new parameter name
+      // Then, increment referral count for the referrer's entry
       const { error: entryError } = await supabaseClient.rpc(
         'increment_referral_count',
         { p_referral_id: referralId }
