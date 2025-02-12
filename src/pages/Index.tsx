@@ -4,7 +4,6 @@ import { Footer } from "@/components/Footer";
 import { EntryForm } from "@/components/sweepstakes/EntryForm";
 import { CountdownTimer } from "@/components/sweepstakes/CountdownTimer";
 import { useCountdown } from "@/hooks/useCountdown";
-import { BeehiivTest } from "@/components/BeehiivTest";
 
 const Index = () => {
   const timeLeft = useCountdown(new Date('2025-04-11T23:59:59'));
@@ -14,7 +13,6 @@ const Index = () => {
       <Navbar />
       
       <main className="flex-grow mt-16">
-        <BeehiivTest />
         <section className="py-12">
           <div className="container mx-auto px-3 flex flex-col md:flex-row gap-6 items-start">
             <div className="w-full md:w-1/2">

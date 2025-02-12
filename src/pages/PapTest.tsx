@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { BeehiivTest } from "@/components/BeehiivTest";
 
 const PapTest = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -65,6 +66,8 @@ const PapTest = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-xl mx-auto space-y-8">
+        <BeehiivTest />
+        
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <h1 className="text-2xl font-bold mb-6">Referral Testing Tool</h1>
           
