@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -29,8 +28,28 @@ serve(async (req) => {
       throw new Error('BEEHIIV_API_KEY is not set');
     }
 
-    const { first_name, last_name, email, sweepstakes_id } = await req.json();
-    console.log('Received data:', { first_name, last_name, email, sweepstakes_id });
+    // Validate request body
+    let requestBody;
+    try {
+      const rawBody = await req.text();
+      console.log('Raw request body:', rawBody);
+      requestBody = JSON.parse(rawBody);
+    } catch (error) {
+      console.error('Failed to parse request body:', error);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid JSON in request body',
+          details: error.message
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const { first_name, last_name, email, sweepstakes_id } = requestBody;
+    console.log('Parsed request data:', { first_name, last_name, email, sweepstakes_id });
 
     if (!email) {
       console.error('Email is required but was not provided');
@@ -298,7 +317,13 @@ serve(async (req) => {
     }
     
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: {
+          name: error.name,
+          stack: error.stack
+        }
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
