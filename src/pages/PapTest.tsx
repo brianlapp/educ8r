@@ -63,9 +63,9 @@ const PapTest = () => {
               <h2 className="text-lg font-semibold mb-2">Test Links</h2>
               <div className="space-y-2">
                 <div>
-                  <p className="text-sm font-medium">Click Tracking URL:</p>
+                  <p className="text-sm font-medium">Click Test URL:</p>
                   <code className="block bg-gray-100 p-2 rounded text-sm break-all">
-                    {`${window.location.origin}/thank-you?type=click&sweeps=${papReferrerId}`}
+                    {`${window.location.origin}/pap-test-click?sweeps=${papReferrerId}`}
                   </code>
                 </div>
                 
@@ -92,8 +92,8 @@ const PapTest = () => {
           <h2 className="text-lg font-semibold mb-4">Testing Instructions</h2>
           <ol className="list-decimal list-inside space-y-2 text-sm">
             <li>Enter a PAP Referrer ID above</li>
-            <li>Copy the Click Tracking URL and visit it in a new tab</li>
-            <li>Check the Edge Function logs for click event processing</li>
+            <li>Copy the Click Test URL and visit it in a new tab</li>
+            <li>The test page will process the click and show results</li>
             <li>Use the "Simulate Conversion" button to test conversion tracking</li>
             <li>Verify the referral count updates in the database</li>
           </ol>
