@@ -398,7 +398,7 @@ export type Database = {
       }
       increment_referral_count: {
         Args: {
-          p_pap_affiliate_id: string
+          p_referral_id: string
         }
         Returns: undefined
       }

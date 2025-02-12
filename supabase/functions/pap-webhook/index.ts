@@ -68,10 +68,10 @@ serve(async (req) => {
         );
       }
 
-      // Then, increment referral count for the referrer's entry
+      // Then, increment referral count for the referrer's entry using the new parameter name
       const { error: entryError } = await supabaseClient.rpc(
         'increment_referral_count',
-        { p_pap_affiliate_id: referralId }
+        { p_referral_id: referralId }
       );
 
       if (entryError) {
