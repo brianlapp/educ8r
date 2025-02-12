@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 const PapTest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [papReferrerId, setPapReferrerId] = useState("");
+  const [isCreatingEntry, setIsCreatingEntry] = useState(false);
 
   const simulateConversion = async () => {
     if (!papReferrerId) {
@@ -36,6 +37,39 @@ const PapTest = () => {
       toast.error("Failed to simulate conversion");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const createTestEntry = async () => {
+    if (!papReferrerId) {
+      toast.error("Please enter a PAP Referrer ID");
+      return;
+    }
+
+    setIsCreatingEntry(true);
+    try {
+      const { data, error } = await supabase
+        .from('sweepstakes_entries')
+        .insert({
+          first_name: 'Test',
+          last_name: 'User',
+          email: 'test@example.com',
+          terms_accepted: true,
+          pap_affiliate_id: papReferrerId,
+          beehiiv_subscriber_id: 'test_subscriber_123' // Adding this for Beehiiv testing
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success("Test entry created successfully!");
+      console.log("Created entry:", data);
+    } catch (error) {
+      console.error("Error creating test entry:", error);
+      toast.error("Failed to create test entry");
+    } finally {
+      setIsCreatingEntry(false);
     }
   };
 
@@ -78,13 +112,24 @@ const PapTest = () => {
               </div>
             </div>
 
-            <Button
-              onClick={simulateConversion}
-              disabled={isLoading || !papReferrerId}
-              className="w-full"
-            >
-              {isLoading ? "Simulating..." : "Simulate Conversion"}
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button
+                onClick={createTestEntry}
+                disabled={isCreatingEntry || !papReferrerId}
+                className="w-full"
+                variant="outline"
+              >
+                {isCreatingEntry ? "Creating..." : "1. Create Test Entry"}
+              </Button>
+
+              <Button
+                onClick={simulateConversion}
+                disabled={isLoading || !papReferrerId}
+                className="w-full"
+              >
+                {isLoading ? "Simulating..." : "2. Simulate Conversion"}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -92,6 +137,7 @@ const PapTest = () => {
           <h2 className="text-lg font-semibold mb-4">Testing Instructions</h2>
           <ol className="list-decimal list-inside space-y-2 text-sm">
             <li>Enter a PAP Referrer ID above</li>
+            <li>Click "Create Test Entry" to create an entry in the database</li>
             <li>Copy the Click Test URL and visit it in a new tab</li>
             <li>The test page will process the click and show results</li>
             <li>Use the "Simulate Conversion" button to test conversion tracking</li>
