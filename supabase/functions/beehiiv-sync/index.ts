@@ -29,6 +29,12 @@ serve(async (req) => {
       throw new Error('BEEHIIV_API_KEY is not set');
     }
 
+    // Validate API key format
+    if (!BEEHIIV_API_KEY.startsWith('bhv_')) {
+      console.error('Invalid BEEHIIV_API_KEY format');
+      throw new Error('Invalid BEEHIIV_API_KEY format - should start with bhv_');
+    }
+
     console.log('BEEHIIV_API_KEY exists (first 4 chars):', BEEHIIV_API_KEY.substring(0, 4));
 
     const { first_name, last_name, email, sweepstakes_id } = await req.json();
@@ -126,9 +132,26 @@ serve(async (req) => {
     console.log('Sending subscription request to Beehiiv with data:', JSON.stringify(subscriberData));
 
     try {
+      // First validate the API key with a test request
+      const testResponse = await fetch('https://api.beehiiv.com/v2/publications/current', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
+        }
+      });
+
+      console.log('Test API response status:', testResponse.status);
+      const testResponseText = await testResponse.text();
+      console.log('Test API response:', testResponseText);
+
+      if (!testResponse.ok) {
+        throw new Error(`Failed to validate Beehiiv API key: ${testResponseText}`);
+      }
+
+      // Proceed with subscriber creation
       console.log('Beehiiv request headers:', {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${BEEHIIV_API_KEY.substring(0, 4)}...`, // Log first 4 chars of API key
+        'Authorization': `Bearer ${BEEHIIV_API_KEY.substring(0, 4)}...`,
       });
 
       const response = await fetch('https://api.beehiiv.com/v2/subscribers', {
@@ -146,6 +169,10 @@ serve(async (req) => {
       const responseText = await response.text();
       console.log('Raw Beehiiv response text:', responseText);
 
+      if (!response.ok) {
+        throw new Error(`Beehiiv API error (${response.status}): ${responseText}`);
+      }
+
       let responseData;
       try {
         responseData = responseText ? JSON.parse(responseText) : null;
@@ -153,10 +180,6 @@ serve(async (req) => {
       } catch (parseError) {
         console.error('Failed to parse Beehiiv response:', parseError);
         throw new Error(`Invalid JSON response from Beehiiv: ${responseText}`);
-      }
-
-      if (!response.ok) {
-        throw new Error(`Beehiiv API error: ${responseText}`);
       }
 
       if (!responseData) {
@@ -183,6 +206,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200
       });
+
     } catch (beehiivError) {
       console.error('Beehiiv API error details:', {
         name: beehiivError.name,
