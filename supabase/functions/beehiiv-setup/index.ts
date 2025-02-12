@@ -21,41 +21,64 @@ serve(async (req) => {
       throw new Error('BEEHIIV_API_KEY is not set');
     }
 
-    const createCustomField = async () => {
-      const customFieldData = {
-        name: "Sweepstakes Entry",
-        kind: "number",
-        display: "Sweepstakes Entry"
-      };
+    // First, let's list existing custom fields to avoid duplicates
+    console.log('Fetching existing custom fields...');
+    const listResponse = await fetch(
+      `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/custom_fields`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
+        },
+      }
+    );
 
-      console.log('Creating custom field with data:', customFieldData);
+    const existingFields = await listResponse.json();
+    console.log('Existing custom fields:', existingFields);
 
-      const response = await fetch(
-        `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/custom_fields`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
-          },
-          body: JSON.stringify(customFieldData),
+    // Check if the field already exists
+    const existingField = existingFields.data?.find(
+      (field: any) => field.name === "Sweepstakes Entry"
+    );
+
+    if (existingField) {
+      console.log('Custom field already exists:', existingField);
+      return new Response(
+        JSON.stringify({ success: true, data: existingField, existing: true }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
         }
       );
+    }
 
-      const data = await response.json();
-      console.log('Custom field creation response:', data);
-
-      if (!response.ok) {
-        throw new Error(`Failed to create custom field: ${JSON.stringify(data)}`);
+    // If the field doesn't exist, create it
+    console.log('Creating new custom field...');
+    const createResponse = await fetch(
+      `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/custom_fields`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
+        },
+        body: JSON.stringify({
+          name: "Sweepstakes Entry",
+          kind: "number",
+          display: "Sweepstakes Entry"
+        }),
       }
+    );
 
-      return data;
-    };
+    const createData = await createResponse.json();
+    console.log('Custom field creation response:', createData);
 
-    const result = await createCustomField();
+    if (!createResponse.ok) {
+      throw new Error(`Failed to create custom field: ${JSON.stringify(createData)}`);
+    }
 
     return new Response(
-      JSON.stringify({ success: true, data: result }),
+      JSON.stringify({ success: true, data: createData, created: true }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200
