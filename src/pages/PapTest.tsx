@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 const PapTest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [referralId, setReferralId] = useState("");
-  const [isCreatingEntry, setIsCreatingEntry] = useState(false);
 
   const simulateConversion = async () => {
     if (!referralId) {
@@ -40,39 +39,6 @@ const PapTest = () => {
     }
   };
 
-  const createTestEntry = async () => {
-    if (!referralId) {
-      toast.error("Please enter a Referral ID");
-      return;
-    }
-
-    setIsCreatingEntry(true);
-    try {
-      const { data, error } = await supabase
-        .from('sweepstakes_entries')
-        .insert({
-          first_name: 'Test',
-          last_name: 'User',
-          email: 'test@example.com',
-          terms_accepted: true,
-          pap_referral_id: referralId,
-          beehiiv_subscriber_id: 'test_subscriber_123' // Adding this for Beehiiv testing
-        })
-        .select()
-        .maybeSingle();
-
-      if (error) throw error;
-
-      toast.success("Test entry created successfully!");
-      console.log("Created entry:", data);
-    } catch (error) {
-      console.error("Error creating test entry:", error);
-      toast.error("Failed to create test entry");
-    } finally {
-      setIsCreatingEntry(false);
-    }
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-xl mx-auto space-y-8">
@@ -82,14 +48,14 @@ const PapTest = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Referral ID
+                Your Referral ID
               </label>
               <input
                 type="text"
                 value={referralId}
                 onChange={(e) => setReferralId(e.target.value)}
                 className="w-full p-2 border rounded"
-                placeholder="Enter Referral ID"
+                placeholder="Enter the Referral ID from your thank you page"
               />
             </div>
 
@@ -114,20 +80,11 @@ const PapTest = () => {
 
             <div className="flex flex-col gap-2">
               <Button
-                onClick={createTestEntry}
-                disabled={isCreatingEntry || !referralId}
-                className="w-full"
-                variant="outline"
-              >
-                {isCreatingEntry ? "Creating..." : "1. Create Test Entry"}
-              </Button>
-
-              <Button
                 onClick={simulateConversion}
                 disabled={isLoading || !referralId}
                 className="w-full"
               >
-                {isLoading ? "Simulating..." : "2. Simulate Conversion"}
+                {isLoading ? "Simulating..." : "Simulate Conversion"}
               </Button>
             </div>
           </div>
@@ -136,12 +93,11 @@ const PapTest = () => {
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <h2 className="text-lg font-semibold mb-4">Testing Instructions</h2>
           <ol className="list-decimal list-inside space-y-2 text-sm">
-            <li>Enter a Referral ID above</li>
-            <li>Click "Create Test Entry" to create an entry in the database</li>
-            <li>Copy the Click Test URL and visit it in a new tab</li>
-            <li>The test page will process the click and show results</li>
-            <li>Use the "Simulate Conversion" button to test conversion tracking</li>
-            <li>Verify the referral count updates in the database</li>
+            <li>Go to the main form and submit your entry with your real email</li>
+            <li>Copy your Referral ID from the thank you page</li>
+            <li>Paste your Referral ID above</li>
+            <li>Use the "Simulate Conversion" button to test the referral system</li>
+            <li>Check your Beehiiv dashboard to verify the subscriber update</li>
           </ol>
         </div>
       </div>
@@ -150,4 +106,3 @@ const PapTest = () => {
 };
 
 export default PapTest;
-
