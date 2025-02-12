@@ -126,8 +126,8 @@ serve(async (req) => {
     console.log('Sending subscription request to Beehiiv with data:', JSON.stringify(subscriberData));
 
     try {
-      // First validate the API key with a test request
-      const testResponse = await fetch('https://api.beehiiv.com/v2/publications/current', {
+      // Validate API key by fetching the publication we're actually going to use
+      const testResponse = await fetch(`https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
