@@ -98,11 +98,10 @@ serve(async (req) => {
     console.log('Sweepstakes entry created:', entryData);
 
     // Format the custom fields for Beehiiv
-    const customFields = {
-      'first_name': first_name || '',
-      'last_name': last_name || '',
-      'sweeps-entry': 1 // Initial entry count
-    };
+    const customFields = [
+      { id: 'first_name', value: first_name || '' },
+      { id: 'last_name', value: last_name || '' }
+    ];
 
     // Define base tags
     const tags = ['sweeps', 'Comprendi-sweeps'];

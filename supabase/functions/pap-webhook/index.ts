@@ -7,8 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const BEEHIIV_PUBLICATION_ID = 'pub_4b47c3db-7b59-4c82-a18b-16cf10fc2d23';
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -116,7 +114,7 @@ serve(async (req) => {
           
           // Update Beehiiv subscriber custom fields with the entry count
           const beehiivResponse = await fetch(
-            `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscribers/${updatedEntry.beehiiv_subscriber_id}`,
+            `https://api.beehiiv.com/v2/subscribers/${updatedEntry.beehiiv_subscriber_id}`,
             {
               method: 'PATCH',
               headers: {
