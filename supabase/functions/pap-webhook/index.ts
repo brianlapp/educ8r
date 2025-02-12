@@ -34,19 +34,19 @@ serve(async (req) => {
       console.log('Processing click event');
       console.log('Sweeps param:', sweeps);
 
-      // Extract affiliate ID from sweeps parameter
-      const papAffiliateId = sweeps;
-      if (!papAffiliateId) {
+      // Extract referral ID from sweeps parameter
+      const referralId = sweeps;
+      if (!referralId) {
         throw new Error('Invalid sweeps parameter format');
       }
 
-      console.log('PAP Affiliate ID:', papAffiliateId);
+      console.log('Referral ID:', referralId);
 
-      // First, find the entry with this PAP affiliate ID
+      // Find the entry with this referral ID
       const { data: entry, error: findError } = await supabaseClient
         .from('sweepstakes_entries')
         .select('id, entry_count, sweepstakes_id, email')
-        .eq('pap_affiliate_id', papAffiliateId)
+        .eq('pap_referral_id', referralId)
         .maybeSingle();
 
       if (findError) {
@@ -55,11 +55,11 @@ serve(async (req) => {
       }
 
       if (!entry) {
-        console.error('No entry found for PAP affiliate ID:', papAffiliateId);
+        console.error('No entry found for referral ID:', referralId);
         return new Response(
           JSON.stringify({ 
             success: false, 
-            error: 'No entry found with the provided affiliate ID' 
+            error: 'No entry found with the provided referral ID' 
           }),
           { 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -71,7 +71,7 @@ serve(async (req) => {
       // Then, increment referral count for the referrer's entry
       const { error: entryError } = await supabaseClient.rpc(
         'increment_referral_count',
-        { p_pap_affiliate_id: papAffiliateId }
+        { p_pap_affiliate_id: referralId }
       );
 
       if (entryError) {
@@ -93,13 +93,13 @@ serve(async (req) => {
     // Handle commission/conversion events
     if (type !== 'click') {
       const {
-        refid: papReferrerId,
+        refid: referrerId,
         clickid: papTrackingId,
         commission_status: status,
         email: referredEmail
       } = body;
 
-      if (!papReferrerId || !papTrackingId || !status || !referredEmail) {
+      if (!referrerId || !papTrackingId || !status || !referredEmail) {
         throw new Error('Missing required fields in PAP webhook payload');
       }
 
@@ -122,7 +122,7 @@ serve(async (req) => {
         const { data: referrerEntry, error: findError } = await supabaseClient
           .from('sweepstakes_entries')
           .select('id, beehiiv_subscriber_id')
-          .eq('pap_affiliate_id', papReferrerId)
+          .eq('pap_referral_id', referrerId)
           .maybeSingle();
 
         if (findError) {
