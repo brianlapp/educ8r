@@ -212,6 +212,8 @@ export type Database = {
       sweepstakes_entries: {
         Row: {
           age: number | null
+          beehiiv_entry_synced: boolean | null
+          beehiiv_entry_synced_at: string | null
           beehiiv_subscriber_id: string | null
           country: string | null
           created_at: string | null
@@ -233,6 +235,8 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          beehiiv_entry_synced?: boolean | null
+          beehiiv_entry_synced_at?: string | null
           beehiiv_subscriber_id?: string | null
           country?: string | null
           created_at?: string | null
@@ -254,6 +258,8 @@ export type Database = {
         }
         Update: {
           age?: number | null
+          beehiiv_entry_synced?: boolean | null
+          beehiiv_entry_synced_at?: string | null
           beehiiv_subscriber_id?: string | null
           country?: string | null
           created_at?: string | null

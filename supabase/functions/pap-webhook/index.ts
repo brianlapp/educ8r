@@ -45,7 +45,7 @@ serve(async (req) => {
       // First, find the entry with this PAP affiliate ID
       const { data: entry, error: findError } = await supabaseClient
         .from('sweepstakes_entries')
-        .select('id, entry_count, sweepstakes_id')
+        .select('id, entry_count, sweepstakes_id, email, beehiiv_subscriber_id, beehiiv_entry_synced')
         .eq('pap_affiliate_id', papAffiliateId)
         .maybeSingle();
 
@@ -77,6 +77,57 @@ serve(async (req) => {
       if (entryError) {
         console.error('Error incrementing referral count:', entryError);
         throw entryError;
+      }
+
+      // If not already synced to Beehiiv and we have a subscriber ID, update their custom field
+      if (!entry.beehiiv_entry_synced && entry.beehiiv_subscriber_id) {
+        const BEEHIIV_API_KEY = Deno.env.get('BEEHIIV_API_KEY');
+        if (!BEEHIIV_API_KEY) {
+          console.error('BEEHIIV_API_KEY not set');
+          throw new Error('BEEHIIV_API_KEY not configured');
+        }
+
+        try {
+          // Update Beehiiv subscriber custom fields
+          const beehiivResponse = await fetch(
+            `https://api.beehiiv.com/v2/subscribers/${entry.beehiiv_subscriber_id}`,
+            {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
+              },
+              body: JSON.stringify({
+                custom_fields: {
+                  sweeps_entry: 'extra_entry'
+                }
+              })
+            }
+          );
+
+          if (!beehiivResponse.ok) {
+            const errorData = await beehiivResponse.text();
+            console.error('Beehiiv API error:', errorData);
+            throw new Error(`Failed to update Beehiiv subscriber: ${errorData}`);
+          }
+
+          // Mark the entry as synced in our database
+          const { error: syncError } = await supabaseClient
+            .from('sweepstakes_entries')
+            .update({
+              beehiiv_entry_synced: true,
+              beehiiv_entry_synced_at: new Date().toISOString()
+            })
+            .eq('id', entry.id);
+
+          if (syncError) {
+            console.error('Error marking entry as synced:', syncError);
+            throw syncError;
+          }
+        } catch (beehiivError) {
+          console.error('Error syncing with Beehiiv:', beehiivError);
+          // Don't throw here - we still want to return success for the click
+        }
       }
 
       console.log('Successfully processed PAP click');
