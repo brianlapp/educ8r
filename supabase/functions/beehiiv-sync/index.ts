@@ -29,41 +29,8 @@ serve(async (req) => {
       throw new Error('BEEHIIV_API_KEY is not set');
     }
 
-    // Check content type
-    const contentType = req.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Content-Type must be application/json',
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    // Parse request body
-    let requestBody;
-    try {
-      requestBody = await req.json();
-      console.log('Request body:', requestBody);
-    } catch (error) {
-      console.error('Failed to parse request body:', error);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Invalid JSON in request body',
-          details: error.message
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    const { first_name, last_name, email, sweepstakes_id } = requestBody;
-    console.log('Parsed request data:', { first_name, last_name, email, sweepstakes_id });
+    const { first_name, last_name, email, sweepstakes_id } = await req.json();
+    console.log('Received data:', { first_name, last_name, email, sweepstakes_id });
 
     if (!email) {
       console.error('Email is required but was not provided');
@@ -130,11 +97,54 @@ serve(async (req) => {
 
     console.log('Sweepstakes entry created:', entryData);
 
-    // Subscribe to Beehiiv
+    // First, check if subscriber already exists and get their current entry count
+    const subscriberUrl = `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions/email/${encodeURIComponent(email)}`;
     const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
     };
+
+    console.log('Fetching existing subscriber data...');
+    const subscriberResponse = await fetch(subscriberUrl, {
+      method: 'GET',
+      headers,
+    });
+
+    let currentEntryCount = 0;
+    
+    if (subscriberResponse.ok) {
+      const subscriberData = await subscriberResponse.json();
+      console.log('Existing subscriber data:', JSON.stringify(subscriberData, null, 2));
+
+      // Try to get the current entry count from custom fields
+      if (subscriberData.data?.custom_fields) {
+        const entriesField = subscriberData.data.custom_fields.find(
+          (field: { id: string }) => field.id === 'sweepstakes_entries'
+        );
+        if (entriesField) {
+          // Convert the string value to number, default to 0 if parsing fails
+          currentEntryCount = parseInt(entriesField.value, 10) || 0;
+          console.log('Current entry count:', currentEntryCount);
+        }
+      }
+    } else {
+      console.log('No existing subscriber found or error fetching data, starting count at 0');
+    }
+
+    // Increment the entry count
+    const newEntryCount = currentEntryCount + 1;
+    console.log('New entry count:', newEntryCount);
+
+    // Format the custom fields according to Beehiiv API requirements
+    const customFields = [
+      {
+        id: "sweepstakes_entries",
+        value: String(newEntryCount) // Convert to string for TEXT field requirement
+      }
+    ];
+
+    // Add debug logging for custom fields
+    console.log('Custom fields being sent to Beehiiv:', JSON.stringify(customFields, null, 2));
 
     // Define base tags
     const tags = ['sweeps', 'Comprendi-sweeps'];
@@ -149,10 +159,11 @@ serve(async (req) => {
       utm_campaign: 'Comprendi-sweeps',
       send_welcome_email: true,
       reactivate_existing: true,
+      custom_fields: customFields,
       tags
     };
 
-    console.log('Beehiiv subscription data:', subscriberData);
+    console.log('Full Beehiiv subscription data:', JSON.stringify(subscriberData, null, 2));
 
     const beehiivUrl = `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`;
     
@@ -163,19 +174,51 @@ serve(async (req) => {
     });
 
     const responseData = await response.json();
-    console.log('Beehiiv API Response:', {
-      status: response.status,
-      headers: Object.fromEntries(response.headers.entries()),
-      body: responseData
-    });
+    console.log('Beehiiv API complete response:', JSON.stringify(responseData, null, 2));
 
     if (!response.ok) {
+      console.error('Beehiiv API error details:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: responseData
+      });
       throw new Error(`Beehiiv API error: ${JSON.stringify(responseData)}`);
+    }
+
+    // Update the sweepstakes entry with the Beehiiv subscriber ID
+    if (responseData.data && responseData.data.id) {
+      console.log('Updating entry with Beehiiv subscriber ID...');
+      const { error: updateError } = await supabaseClient
+        .from('sweepstakes_entries')
+        .update({ beehiiv_subscriber_id: responseData.data.id })
+        .eq('id', entryData.id);
+
+      if (updateError) {
+        console.warn('Warning: Failed to update Beehiiv subscriber ID:', updateError);
+      }
+    }
+
+    // Add tags explicitly
+    if (responseData.data && responseData.data.id) {
+      const tagsUrl = `${beehiivUrl}/${responseData.data.id}/tags`;
+      console.log('Adding tags to subscriber...');
+      
+      const tagsResponse = await fetch(tagsUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ tags }),
+      });
+
+      if (!tagsResponse.ok) {
+        console.warn('Warning: Failed to add tags:', await tagsResponse.json());
+      }
     }
 
     return new Response(JSON.stringify({
       beehiiv: responseData,
-      entry: entryData
+      entry: entryData,
+      previous_entry_count: currentEntryCount,
+      new_entry_count: newEntryCount
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200
@@ -202,13 +245,7 @@ serve(async (req) => {
     }
     
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: {
-          name: error.name,
-          stack: error.stack
-        }
-      }),
+      JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500

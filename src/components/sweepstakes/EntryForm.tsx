@@ -52,25 +52,18 @@ export const EntryForm = () => {
         throw sweepstakesError;
       }
 
-      if (!sweepstakesData?.id) {
-        throw new Error('No active sweepstakes found');
-      }
-
       const sweepstakes_id = sweepstakesData.id;
       
-      // Validate data before submitting
-      const requestData = {
-        first_name: formData.firstName.trim(),
-        last_name: formData.lastName.trim(),
-        email: formData.email.trim().toLowerCase(),
-        sweepstakes_id
-      };
-
       const { data: submissionData, error: submissionError } = await supabase
         .from('form_submissions')
         .insert([
           {
-            submission_data: requestData,
+            submission_data: {
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              email: formData.email,
+              sweepstakes_id
+            },
             processed: false
           }
         ])
@@ -80,13 +73,16 @@ export const EntryForm = () => {
         throw submissionError;
       }
 
-      console.log('Calling beehiiv-sync with data:', requestData);
       const { data: beehiivData, error: beehiivError } = await supabase.functions.invoke('beehiiv-sync', {
-        body: requestData
+        body: {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          sweepstakes_id
+        }
       });
 
       if (beehiivError) {
-        console.error('Beehiiv sync error:', beehiivError);
         if (beehiivError.message && beehiivError.message.includes('duplicate_entry')) {
           toast({
             variant: "destructive",
@@ -96,6 +92,7 @@ export const EntryForm = () => {
           navigate(`/thank-you?email=${encodeURIComponent(formData.email)}&sweepstakes_id=${sweepstakes_id}`);
           return;
         }
+        console.error('Beehiiv sync error:', beehiivError);
         throw beehiivError;
       }
 
