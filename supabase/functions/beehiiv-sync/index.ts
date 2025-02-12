@@ -100,7 +100,8 @@ serve(async (req) => {
     // Format the custom fields for Beehiiv
     const customFields = [
       { id: 'first_name', value: first_name || '' },
-      { id: 'last_name', value: last_name || '' }
+      { id: 'last_name', value: last_name || '' },
+      { id: 'sweeps-entry', value: '1' }  // Initial entry count as string
     ];
 
     // Define base tags
@@ -120,17 +121,14 @@ serve(async (req) => {
       tags
     };
 
-    console.log('Sending subscription request to Beehiiv with body:', JSON.stringify(subscriberData));
+    console.log('Sending subscription request to Beehiiv with data:', JSON.stringify(subscriberData));
 
-    const beehiivUrl = `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`;
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
-    };
-
-    const response = await fetch(beehiivUrl, {
+    const response = await fetch('https://api.beehiiv.com/v2/subscribers', {
       method: 'POST',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
+      },
       body: JSON.stringify(subscriberData),
     });
 
@@ -154,22 +152,6 @@ serve(async (req) => {
 
       if (updateError) {
         console.warn('Warning: Failed to update Beehiiv subscriber ID:', updateError);
-      }
-    }
-
-    // Add tags explicitly
-    if (responseData.data && responseData.data.id) {
-      const tagsUrl = `${beehiivUrl}/${responseData.data.id}/tags`;
-      console.log('Adding tags to subscriber...');
-      
-      const tagsResponse = await fetch(tagsUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ tags }),
-      });
-
-      if (!tagsResponse.ok) {
-        console.warn('Warning: Failed to add tags:', await tagsResponse.json());
       }
     }
 
