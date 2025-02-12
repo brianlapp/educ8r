@@ -52,7 +52,7 @@ serve(async (req) => {
       );
     }
 
-    // If the field doesn't exist, create it
+    // If the field doesn't exist, create it - using 'string' type instead of 'number'
     console.log('Creating new custom field...');
     const createResponse = await fetch(
       `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/custom_fields`,
@@ -64,7 +64,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           name: "Sweepstakes Entry",
-          kind: "number",
+          kind: "string", // Changed from 'number' to 'string'
           display: "Sweepstakes Entry"
         }),
       }
