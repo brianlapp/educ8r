@@ -16,13 +16,12 @@ serve(async (req) => {
   try {
     console.log('PAP webhook received');
     
-    // Parse URL and query parameters
-    const url = new URL(req.url);
-    const eventType = url.searchParams.get('type');
-    const sweepsParam = url.searchParams.get('sweeps');
+    // Parse request body
+    const body = await req.json();
+    const { type, sweeps } = body;
     
-    console.log('Event type:', eventType);
-    console.log('Sweeps param:', sweepsParam);
+    console.log('Event type:', type);
+    console.log('Sweeps param:', sweeps);
 
     // Initialize Supabase client
     const supabaseClient = createClient(
@@ -31,11 +30,11 @@ serve(async (req) => {
     );
 
     // Handle click events
-    if (eventType === 'click' && sweepsParam) {
+    if (type === 'click' && sweeps) {
       console.log('Processing click event');
 
       // Extract affiliate ID from sweeps parameter
-      const papAffiliateId = sweepsParam;
+      const papAffiliateId = sweeps;
       if (!papAffiliateId) {
         throw new Error('Invalid sweeps parameter format');
       }
@@ -82,7 +81,7 @@ serve(async (req) => {
     }
     
     // Handle commission/conversion events
-    if (eventType !== 'click') {
+    if (type !== 'click') {
       const data = await req.json();
       console.log('Webhook payload:', data);
 
