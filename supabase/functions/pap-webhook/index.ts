@@ -169,6 +169,55 @@ serve(async (req) => {
           throw referralError;
         }
 
+        // Find the original entry that made this referral
+        const { data: referrerEntry, error: findError } = await supabaseClient
+          .from('sweepstakes_entries')
+          .select('id, beehiiv_subscriber_id')
+          .eq('pap_affiliate_id', papReferrerId)
+          .maybeSingle();
+
+        if (findError) {
+          console.error('Error finding referrer entry:', findError);
+          throw findError;
+        }
+
+        if (referrerEntry?.beehiiv_subscriber_id) {
+          const BEEHIIV_API_KEY = Deno.env.get('BEEHIIV_API_KEY');
+          if (!BEEHIIV_API_KEY) {
+            console.error('BEEHIIV_API_KEY not set');
+            throw new Error('BEEHIIV_API_KEY not configured');
+          }
+
+          try {
+            // Update Beehiiv subscriber custom fields for conversion
+            const beehiivResponse = await fetch(
+              `https://api.beehiiv.com/v2/subscribers/${referrerEntry.beehiiv_subscriber_id}`,
+              {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${BEEHIIV_API_KEY}`,
+                },
+                body: JSON.stringify({
+                  custom_fields: {
+                    sweeps_conversion: 'true'
+                  }
+                })
+              }
+            );
+
+            if (!beehiivResponse.ok) {
+              const errorData = await beehiivResponse.text();
+              console.error('Beehiiv API error:', errorData);
+              // Don't throw - we still want to count the conversion
+              console.error(`Failed to update Beehiiv subscriber: ${errorData}`);
+            }
+          } catch (beehiivError) {
+            console.error('Error syncing conversion with Beehiiv:', beehiivError);
+            // Don't throw - we still want to count the conversion
+          }
+        }
+
         console.log('Successfully processed PAP conversion');
       }
     }
