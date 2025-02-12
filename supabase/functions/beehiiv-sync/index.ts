@@ -99,7 +99,7 @@ serve(async (req) => {
 
     // Format the custom fields for Beehiiv - using the exact field ID from Beehiiv
     const customFields = [
-      { id: 'sweepstakes_entry', value: String(entryData.entry_count) }, // Changed to use underscore instead of hyphen
+      { id: 'Sweepstakes_Entry', value: String(entryData.entry_count) }, // Updated to match exact Beehiiv field ID
       { id: 'first_name', value: first_name || '' },
       { id: 'last_name', value: last_name || '' }
     ];
