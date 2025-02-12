@@ -97,12 +97,12 @@ serve(async (req) => {
 
     console.log('Sweepstakes entry created:', entryData);
 
-    // Format the custom fields for Beehiiv - now including the entry count
-    const customFields = {
-      'sweeps-entry': String(entryData.entry_count), // Convert to string since we changed the field type
-      'first_name': first_name || '',
-      'last_name': last_name || ''
-    };
+    // Format the custom fields for Beehiiv - now as an array of objects
+    const customFields = [
+      { id: 'sweeps-entry', value: String(entryData.entry_count) },
+      { id: 'first_name', value: first_name || '' },
+      { id: 'last_name', value: last_name || '' }
+    ];
 
     // Add debug logging for custom fields
     console.log('Custom fields being sent to Beehiiv:', JSON.stringify(customFields, null, 2));
