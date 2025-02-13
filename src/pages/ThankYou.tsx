@@ -31,6 +31,7 @@ Best regards`;
     const initializePage = async () => {
       const urlParams = new URLSearchParams(location.search);
       const email = urlParams.get('email');
+      const networkAffiliateId = urlParams.get('network_affiliate_id');
       
       if (email) {
         try {
@@ -38,7 +39,8 @@ Best regards`;
             body: {
               email,
               first_name: urlParams.get('first_name') || '',
-              last_name: urlParams.get('last_name') || ''
+              last_name: urlParams.get('last_name') || '',
+              network_affiliate_id: networkAffiliateId || ''
             }
           });
 
@@ -244,7 +246,7 @@ Best regards`;
             <h2 className="text-xl font-semibold text-blue-900 mb-4">Want Another Entry?</h2>
             <p className="text-blue-700 mb-4">Sign up for Comprendi Reading Lessons and get an extra entry!</p>
             <Button 
-              onClick={() => window.open('https://example.com/comprendi-signup', '_blank')}
+              onClick={() => window.open('https://dmlearninglab.com/homesc/', '_blank')}  {/* Updated URL */}
               className="w-full md:w-auto"
             >
               Sign Up Now
