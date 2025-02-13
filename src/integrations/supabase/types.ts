@@ -330,6 +330,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       webhook_configs: {
         Row: {
           created_at: string | null
@@ -396,6 +417,12 @@ export type Database = {
         }
         Returns: undefined
       }
+      has_role: {
+        Args: {
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
       increment_referral_count: {
         Args: {
           p_referral_id: string
@@ -410,7 +437,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
