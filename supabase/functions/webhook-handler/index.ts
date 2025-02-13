@@ -60,8 +60,7 @@ serve(async (req) => {
       custom_fields: [
         { name: "first_name", value: body.firstName },
         { name: "last_name", value: body.lastName }
-      ],
-      tags: ['sweeps', 'Comprendi-sweeps'] // Added tags back to the payload
+      ]
     }
     console.log('Beehiiv payload:', JSON.stringify(beehiivPayload, null, 2))
 
@@ -98,6 +97,25 @@ serve(async (req) => {
     } catch (e) {
       console.error('Error parsing Beehiiv response:', e);
       throw new Error('Invalid JSON response from Beehiiv');
+    }
+
+    // Add tags in a separate API call
+    console.log('Adding tags to subscription...');
+    const tagsResponse = await fetch(`https://api.beehiiv.com/v2/publications/${PUBLICATION_ID}/subscriptions/${beehiivData.id}/tags`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${beehiivApiKey}`,
+      },
+      body: JSON.stringify({
+        tags: ['sweeps', 'Comprendi-sweeps']
+      }),
+    });
+
+    if (!tagsResponse.ok) {
+      console.error('Failed to add tags:', await tagsResponse.text());
+    } else {
+      console.log('Tags added successfully');
     }
 
     // Update the submission with Beehiiv ID
