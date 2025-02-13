@@ -5,6 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import {
   Table,
   TableBody,
@@ -14,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const Admin = () => {
+const AdminDashboard = () => {
   const { data: entries, isLoading, error } = useQuery({
     queryKey: ['sweepstakes-entries'],
     queryFn: async () => {
@@ -105,6 +106,14 @@ const Admin = () => {
 
       <Footer />
     </div>
+  );
+};
+
+const Admin = () => {
+  return (
+    <ProtectedRoute>
+      <AdminDashboard />
+    </ProtectedRoute>
   );
 };
 

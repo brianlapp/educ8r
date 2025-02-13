@@ -442,6 +442,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_authenticated: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user"
