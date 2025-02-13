@@ -68,14 +68,31 @@ serve(async (req) => {
       }),
     })
 
-    if (!beehiivResponse.ok) {
-      const beehiivError = await beehiivResponse.text()
-      console.error('Beehiiv response not OK:', beehiivError)
-      throw new Error(`Failed to send to Beehiiv: ${beehiivError}`)
+    let beehiivResponseText = '';
+    try {
+      beehiivResponseText = await beehiivResponse.text();
+      console.log('Raw Beehiiv response:', beehiivResponseText);
+    } catch (e) {
+      console.error('Error reading Beehiiv response:', e);
     }
 
-    const beehiivData = await beehiivResponse.json()
-    console.log('Successfully sent to Beehiiv:', beehiivData)
+    if (!beehiivResponse.ok) {
+      console.error('Beehiiv response not OK:', {
+        status: beehiivResponse.status,
+        statusText: beehiivResponse.statusText,
+        responseText: beehiivResponseText
+      });
+      throw new Error(`Failed to send to Beehiiv: ${beehiivResponse.status} - ${beehiivResponseText}`);
+    }
+
+    let beehiivData;
+    try {
+      beehiivData = JSON.parse(beehiivResponseText);
+      console.log('Successfully sent to Beehiiv:', beehiivData);
+    } catch (e) {
+      console.error('Error parsing Beehiiv response:', e);
+      throw new Error('Invalid JSON response from Beehiiv');
+    }
 
     // Update the submission with Beehiiv ID
     const { error: updateError } = await supabaseClient
