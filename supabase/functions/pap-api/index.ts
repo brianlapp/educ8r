@@ -30,7 +30,7 @@ serve(async (req) => {
     // Get the entry for this email
     const { data: entry, error: getError } = await supabaseClient
       .from('sweepstakes_entries')
-      .select('id, pap_affiliate_id')
+      .select('id, affiliate_id')
       .eq('email', email)
       .single();
 
