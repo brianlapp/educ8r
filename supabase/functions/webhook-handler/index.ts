@@ -99,21 +99,27 @@ serve(async (req) => {
       throw new Error('Invalid JSON response from Beehiiv');
     }
 
-    // Add tags in a separate API call
+    // Add tags in a separate API call, following exact API documentation format
     console.log('Adding tags to subscription...');
-    const tagsResponse = await fetch(`https://api.beehiiv.com/v2/publications/${PUBLICATION_ID}/subscriptions/${beehiivData.id}/tags`, {
+    const tagsUrl = `https://api.beehiiv.com/v2/publications/${PUBLICATION_ID}/subscriptions/${beehiivData.data.id}/tags`;
+    console.log('Tags URL:', tagsUrl);
+    
+    const tagsResponse = await fetch(tagsUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${beehiivApiKey}`,
       },
       body: JSON.stringify({
-        tags: ['sweeps', 'Comprendi-sweeps']
+        tag_names: ['sweeps', 'Comprendi-sweeps']  // Changed from 'tags' to 'tag_names'
       }),
     });
 
+    const tagsResponseText = await tagsResponse.text();
+    console.log('Tags response:', tagsResponseText);
+
     if (!tagsResponse.ok) {
-      console.error('Failed to add tags:', await tagsResponse.text());
+      console.error('Failed to add tags:', tagsResponseText);
     } else {
       console.log('Tags added successfully');
     }
@@ -122,7 +128,7 @@ serve(async (req) => {
     const { error: updateError } = await supabaseClient
       .from('form_submissions')
       .update({ 
-        beehiiv_id: beehiivData.id,
+        beehiiv_id: beehiivData.data.id,  // Changed to data.id to match Beehiiv response structure
         processed: true 
       })
       .eq('id', submissionData.id)
