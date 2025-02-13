@@ -7,32 +7,24 @@ import { BeehiivTest } from "@/components/BeehiivTest";
 
 const PapTest = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [affiliateId, setAffiliateId] = useState("");
-  const [email, setEmail] = useState("");
-  const [networkAffiliateId, setNetworkAffiliateId] = useState("");
+  const [referralId, setReferralId] = useState("");
 
   const simulateConversion = async () => {
-    if (!affiliateId) {
-      toast.error("Please enter an Affiliate ID");
-      return;
-    }
-
-    if (!email) {
-      toast.error("Please enter an email address");
+    if (!referralId) {
+      toast.error("Please enter a Referral ID");
       return;
     }
 
     setIsLoading(true);
     try {
       const testData = {
-        affiliate_id: affiliateId,
-        network_affiliate_id: networkAffiliateId,
-        email: email,
-        firstName: "Test",
-        lastName: "User"
+        refid: referralId,
+        clickid: `test_click_${Date.now()}`,
+        commission_status: 'approved',
+        email: 'test@example.com'
       };
 
-      const { data, error } = await supabase.functions.invoke('webhook-handler', {
+      const { data, error } = await supabase.functions.invoke('pap-webhook', {
         body: testData
       });
 
@@ -48,51 +40,48 @@ const PapTest = () => {
     }
   };
 
+  const testClick = async () => {
+    if (!referralId) {
+      toast.error("Please enter a Referral ID");
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('pap-webhook', {
+        body: {
+          type: 'click',
+          sweeps: referralId
+        }
+      });
+
+      if (error) throw error;
+      toast.success("Click test successful!");
+      console.log("Click test response:", data);
+    } catch (error) {
+      console.error("Error testing click:", error);
+      toast.error("Click test failed");
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-xl mx-auto space-y-8">
         <BeehiivTest />
         
         <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h1 className="text-2xl font-bold mb-6">Everflow Testing Tool</h1>
+          <h1 className="text-2xl font-bold mb-6">Referral Testing Tool</h1>
           
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Affiliate ID
+                Your Referral ID
               </label>
               <input
                 type="text"
-                value={affiliateId}
-                onChange={(e) => setAffiliateId(e.target.value)}
+                value={referralId}
+                onChange={(e) => setReferralId(e.target.value)}
                 className="w-full p-2 border rounded"
-                placeholder="Enter the Affiliate ID"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Network Affiliate ID
-              </label>
-              <input
-                type="text"
-                value={networkAffiliateId}
-                onChange={(e) => setNetworkAffiliateId(e.target.value)}
-                className="w-full p-2 border rounded"
-                placeholder="Enter Network Affiliate ID (optional)"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Test Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 border rounded"
-                placeholder="Enter test email address"
+                placeholder="Enter the Referral ID from your thank you page"
               />
             </div>
 
@@ -101,8 +90,17 @@ const PapTest = () => {
               <div className="space-y-2">
                 <div>
                   <Button
+                    onClick={testClick}
+                    disabled={!referralId}
+                    className="w-full mb-2"
+                  >
+                    Test Click
+                  </Button>
+                </div>
+                <div>
+                  <Button
                     onClick={simulateConversion}
-                    disabled={isLoading || !affiliateId || !email}
+                    disabled={isLoading || !referralId}
                     className="w-full"
                   >
                     {isLoading ? "Simulating..." : "Simulate Conversion"}
@@ -112,12 +110,19 @@ const PapTest = () => {
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold mb-2">Webhook URL</h2>
+              <h2 className="text-lg font-semibold mb-2">Test Links</h2>
               <div className="space-y-2">
+                <div>
+                  <p className="text-sm font-medium">Click Test URL:</p>
+                  <code className="block bg-gray-100 p-2 rounded text-sm break-all">
+                    {`${window.location.origin}/pap-test-click?sweeps=${referralId}`}
+                  </code>
+                </div>
+                
                 <div>
                   <p className="text-sm font-medium">Webhook URL:</p>
                   <code className="block bg-gray-100 p-2 rounded text-sm break-all">
-                    https://xrycgmzgskcbhvdclflj.supabase.co/functions/v1/webhook-handler
+                    https://xrycgmzgskcbhvdclflj.supabase.co/functions/v1/pap-webhook
                   </code>
                 </div>
               </div>
@@ -128,12 +133,12 @@ const PapTest = () => {
         <div className="bg-white p-6 rounded-lg shadow-lg">
           <h2 className="text-lg font-semibold mb-4">Testing Instructions</h2>
           <ol className="list-decimal list-inside space-y-2 text-sm">
-            <li>Enter an Affiliate ID (use "1" for testing)</li>
-            <li>Enter a Network Affiliate ID (optional)</li>
-            <li>Enter a test email address</li>
-            <li>Click "Simulate Conversion" to test Everflow tracking</li>
-            <li>Check your Everflow dashboard to verify the conversion</li>
-            <li>Check Beehiiv dashboard to verify the subscriber update</li>
+            <li>Go to the main form and submit your entry with your real email</li>
+            <li>Copy your Referral ID from the thank you page</li>
+            <li>Paste your Referral ID above</li>
+            <li>Use the "Test Click" button to test click tracking</li>
+            <li>Use "Simulate Conversion" to test conversion tracking</li>
+            <li>Check your Beehiiv dashboard to verify the subscriber update</li>
           </ol>
         </div>
       </div>

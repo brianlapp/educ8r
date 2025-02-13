@@ -31,7 +31,6 @@ Best regards`;
     const initializePage = async () => {
       const urlParams = new URLSearchParams(location.search);
       const email = urlParams.get('email');
-      const network_affiliate_id = urlParams.get('network_affiliate_id');
       
       if (email) {
         try {
@@ -39,8 +38,7 @@ Best regards`;
             body: {
               email,
               first_name: urlParams.get('first_name') || '',
-              last_name: urlParams.get('last_name') || '',
-              network_affiliate_id: network_affiliate_id || ''
+              last_name: urlParams.get('last_name') || ''
             }
           });
 
