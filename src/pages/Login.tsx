@@ -29,6 +29,7 @@ const Login = () => {
       if (error) throw error;
 
       if (user) {
+        // Create admin role for new user
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert([
@@ -63,20 +64,6 @@ const Login = () => {
       if (error) throw error;
 
       if (user) {
-        const { data: role, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
-
-        if (roleError) throw roleError;
-
-        if (!role) {
-          await supabase.auth.signOut();
-          throw new Error('Unauthorized access: Admin privileges required');
-        }
-
         toast({
           title: "Login successful",
           description: "Welcome back!",
