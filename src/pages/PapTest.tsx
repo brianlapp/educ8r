@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -12,7 +13,6 @@ declare global {
       urlParameter: (param: string) => string;
       impression: (params: any) => Promise<void>;
     };
-    EverflowGlobal: any;
   }
 }
 
@@ -22,44 +22,34 @@ const PapTest = () => {
   const [transactionId, setTransactionId] = useState<string | null>(null);
 
   useEffect(() => {
-    const initializeEverflow = async () => {
-      // Initialize Everflow with global configuration
-      window.EverflowGlobal = {
-        accountId: 1, // Using the default value that was working before
-        debug: true
-      };
+    // Load Everflow SDK
+    const script = document.createElement('script');
+    script.src = "https://www.eflow.team/scripts/sdk/everflow.js";
+    script.async = true;
+    document.body.appendChild(script);
 
-      const script = document.createElement('script');
-      script.src = "https://www.eflow.team/scripts/sdk/everflow.js";
-      script.async = true;
-      document.body.appendChild(script);
-
-      script.onload = () => {
-        try {
-          const affid = window.EF.urlParameter('affid');
-          if (affid) {
-            setReferralId(affid);
-            
-            // Track impression
-            window.EF.impression({
-              offer_id: window.EF.urlParameter('oid') || 1986,
-              affiliate_id: Number(affid),
-              uid: window.EF.urlParameter('uid') || 486,
-              sub1: 'test_impression'
-            }).then(() => {
-              console.log('Impression tracked successfully');
-            }).catch((error) => {
-              console.error('Error tracking impression:', error);
-            });
-          }
-        } catch (error) {
-          console.error('Error processing URL parameters:', error);
+    script.onload = () => {
+      try {
+        const affid = window.EF.urlParameter('affid');
+        if (affid) {
+          setReferralId(affid);
+          
+          // Track impression
+          window.EF.impression({
+            offer_id: window.EF.urlParameter('oid') || 1986,
+            affiliate_id: Number(affid),
+            uid: window.EF.urlParameter('uid') || 486,
+            sub1: 'test_impression'
+          }).catch((error) => {
+            console.error('Error tracking impression:', error);
+          });
         }
-      };
+      } catch (error) {
+        console.error('Error processing URL parameters:', error);
+      }
     };
 
-    initializeEverflow();
-
+    // Cleanup
     return () => {
       const script = document.querySelector('script[src="https://www.eflow.team/scripts/sdk/everflow.js"]');
       if (script && document.body.contains(script)) {
@@ -74,11 +64,6 @@ const PapTest = () => {
       return;
     }
 
-    if (typeof window.EF === 'undefined') {
-      toast.error("Everflow SDK not loaded yet. Please try again.");
-      return;
-    }
-    
     try {
       const tid = await window.EF.click({
         offer_id: window.EF.urlParameter('oid') || 1986,
@@ -97,28 +82,21 @@ const PapTest = () => {
   };
 
   const simulateConversion = async () => {
-    if (!referralId) {
-      toast.error("Please enter a Referral ID");
-      return;
-    }
-
-    if (typeof window.EF === 'undefined') {
-      toast.error("Everflow SDK not loaded yet. Please try again.");
+    if (!referralId || !transactionId) {
+      toast.error("Please test a click first");
       return;
     }
 
     setIsLoading(true);
     try {
-      const { conversion_id, transaction_id } = await window.EF.conversion({
+      const { conversion_id } = await window.EF.conversion({
         offer_id: window.EF.urlParameter('oid') || 1986,
         transaction_id: transactionId,
         amount: 0,
         email: 'test@example.com'
       });
 
-      console.log("Conversion recorded:", { conversion_id, transaction_id });
-
-      // Now update entry count in Supabase
+      // Update entry count in Supabase
       const { error } = await supabase.rpc('increment_referral_count', {
         p_referral_id: referralId
       });
@@ -126,6 +104,7 @@ const PapTest = () => {
       if (error) throw error;
 
       toast.success("Conversion simulated successfully!");
+      console.log("Conversion recorded:", { conversion_id, transaction_id: transactionId });
     } catch (error) {
       console.error("Error simulating conversion:", error);
       toast.error("Failed to simulate conversion");
@@ -159,24 +138,20 @@ const PapTest = () => {
             <div>
               <h2 className="text-lg font-semibold mb-2">Test Actions</h2>
               <div className="space-y-2">
-                <div>
-                  <Button
-                    onClick={testClick}
-                    disabled={!referralId}
-                    className="w-full mb-2"
-                  >
-                    Test Click
-                  </Button>
-                </div>
-                <div>
-                  <Button
-                    onClick={simulateConversion}
-                    disabled={isLoading || !referralId || !transactionId}
-                    className="w-full"
-                  >
-                    {isLoading ? "Simulating..." : "Simulate Conversion"}
-                  </Button>
-                </div>
+                <Button
+                  onClick={testClick}
+                  disabled={!referralId}
+                  className="w-full mb-2"
+                >
+                  Test Click
+                </Button>
+                <Button
+                  onClick={simulateConversion}
+                  disabled={isLoading || !referralId || !transactionId}
+                  className="w-full"
+                >
+                  {isLoading ? "Simulating..." : "Simulate Conversion"}
+                </Button>
               </div>
             </div>
 
