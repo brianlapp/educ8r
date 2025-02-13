@@ -50,24 +50,27 @@ serve(async (req) => {
     const PUBLICATION_ID = 'pub_4b47c3db-7b59-4c82-a18b-16cf10fc2d23'
     
     console.log('Sending data to Beehiiv...')
+    const beehiivPayload = {
+      email: body.email,
+      publication_id: PUBLICATION_ID,
+      reactivate_existing: true,
+      send_welcome_email: true,
+      utm_source: 'sweepwidget',
+      utm_campaign: 'giveaway',
+      custom_fields: [
+        { name: "first_name", value: body.firstName },
+        { name: "last_name", value: body.lastName }
+      ]
+    }
+    console.log('Beehiiv payload:', JSON.stringify(beehiivPayload, null, 2))
+
     const beehiivResponse = await fetch(`https://api.beehiiv.com/v2/publications/${PUBLICATION_ID}/subscriptions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${beehiivApiKey}`,
       },
-      body: JSON.stringify({
-        email: body.email,
-        publication_id: PUBLICATION_ID,
-        reactivate_existing: true,
-        send_welcome_email: true,
-        utm_source: 'sweepwidget',
-        utm_campaign: 'giveaway',
-        custom_fields: [
-          { name: "first_name", value: body.firstName }, // Changed from first_name to firstName
-          { name: "last_name", value: body.lastName }    // Changed from last_name to lastName
-        ]
-      }),
+      body: JSON.stringify(beehiivPayload),
     })
 
     let beehiivResponseText = '';
@@ -116,33 +119,38 @@ serve(async (req) => {
       .from('webhook_configs')
       .select('zapier_webhook_url')
       .limit(1)
-      .single()
+      .maybeSingle() // Changed from single() to maybeSingle()
 
     if (webhookError) {
       console.error('Error fetching webhook URL:', webhookError)
-      throw webhookError
+      // Don't throw here, just log and continue
+      console.log('Skipping Zapier webhook due to configuration error')
+    } else if (!webhookConfig?.zapier_webhook_url) {
+      console.log('No Zapier webhook URL configured, skipping Zapier integration')
+    } else {
+      console.log('Forwarding data to Zapier...')
+      // Forward the data to Zapier
+      try {
+        const zapierResponse = await fetch(webhookConfig.zapier_webhook_url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        })
+
+        if (!zapierResponse.ok) {
+          console.error('Zapier response not OK:', zapierResponse.statusText)
+          // Don't throw here, just log the error
+          console.log('Failed to forward to Zapier but continuing')
+        } else {
+          console.log('Successfully forwarded to Zapier')
+        }
+      } catch (zapierError) {
+        console.error('Error calling Zapier webhook:', zapierError)
+        // Don't throw here, just log the error
+      }
     }
-
-    if (!webhookConfig?.zapier_webhook_url) {
-      throw new Error('No Zapier webhook URL configured')
-    }
-
-    console.log('Forwarding data to Zapier...')
-    // Forward the data to Zapier
-    const zapierResponse = await fetch(webhookConfig.zapier_webhook_url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
-
-    if (!zapierResponse.ok) {
-      console.error('Zapier response not OK:', zapierResponse.statusText)
-      throw new Error(`Failed to forward to Zapier: ${zapierResponse.statusText}`)
-    }
-
-    console.log('Successfully forwarded to Zapier')
 
     return new Response(
       JSON.stringify({ success: true }),
