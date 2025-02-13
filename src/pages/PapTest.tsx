@@ -29,24 +29,36 @@ const PapTest = () => {
     document.body.appendChild(script);
 
     // Get URL parameters and track impression when the script loads
-    script.onload = async () => {
-      const affid = window.EF?.urlParameter('affid');
-      if (affid) {
-        setReferralId(affid);
-        
+    script.onload = () => {
+      // Give the SDK a moment to initialize
+      setTimeout(async () => {
         try {
-          // Track impression when page loads with referral parameters
-          await window.EF.impression({
-            offer_id: window.EF.urlParameter('oid') || 1986,
-            affiliate_id: Number(affid),
-            uid: window.EF.urlParameter('uid') || 486,
-            sub1: 'test_impression'
-          });
-          console.log('Impression tracked successfully');
+          if (!window.EF) {
+            console.error('Everflow SDK not found after load');
+            return;
+          }
+
+          const affid = window.EF.urlParameter('affid');
+          if (affid) {
+            setReferralId(affid);
+            
+            try {
+              // Track impression when page loads with referral parameters
+              await window.EF.impression({
+                offer_id: window.EF.urlParameter('oid') || 1986,
+                affiliate_id: Number(affid),
+                uid: window.EF.urlParameter('uid') || 486,
+                sub1: 'test_impression'
+              });
+              console.log('Impression tracked successfully');
+            } catch (error) {
+              console.error('Error tracking impression:', error);
+            }
+          }
         } catch (error) {
-          console.error('Error tracking impression:', error);
+          console.error('Error initializing Everflow:', error);
         }
-      }
+      }, 1000); // Wait 1 second for SDK to initialize
     };
 
     return () => {
