@@ -1,62 +1,16 @@
 
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { BeehiivTest } from "@/components/BeehiivTest";
 import { supabase } from "@/integrations/supabase/client";
-
-declare global {
-  interface Window {
-    EF: {
-      click: (params: any) => Promise<string>;
-      conversion: (params: any) => Promise<{ conversion_id: string; transaction_id: string }>;
-      urlParameter: (param: string) => string;
-      impression: (params: any) => Promise<void>;
-    };
-  }
-}
+import { useEverflow } from "@/contexts/EverflowContext";
 
 const PapTest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [referralId, setReferralId] = useState("");
   const [transactionId, setTransactionId] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Load Everflow SDK
-    const script = document.createElement('script');
-    script.src = "https://www.eflow.team/scripts/sdk/everflow.js";
-    script.async = true;
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      try {
-        const affid = window.EF.urlParameter('affid');
-        if (affid) {
-          setReferralId(affid);
-          
-          // Track impression
-          window.EF.impression({
-            offer_id: window.EF.urlParameter('oid') || 1986,
-            affiliate_id: Number(affid),
-            uid: window.EF.urlParameter('uid') || 486,
-            sub1: 'test_impression'
-          }).catch((error) => {
-            console.error('Error tracking impression:', error);
-          });
-        }
-      } catch (error) {
-        console.error('Error processing URL parameters:', error);
-      }
-    };
-
-    // Cleanup
-    return () => {
-      const script = document.querySelector('script[src="https://www.eflow.team/scripts/sdk/everflow.js"]');
-      if (script && document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
+  const { isReady, trackClick } = useEverflow();
 
   const testClick = async () => {
     if (!referralId) {
@@ -140,10 +94,10 @@ const PapTest = () => {
               <div className="space-y-2">
                 <Button
                   onClick={testClick}
-                  disabled={!referralId}
+                  disabled={!isReady || !referralId}
                   className="w-full mb-2"
                 >
-                  Test Click
+                  {isReady ? 'Test Click' : 'Loading Everflow...'}
                 </Button>
                 <Button
                   onClick={simulateConversion}
