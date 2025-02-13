@@ -23,7 +23,10 @@ const Admin = () => {
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching entries:', error);
+        throw error;
+      }
       return data;
     }
   });
@@ -50,7 +53,7 @@ const Admin = () => {
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Error</AlertTitle>
                     <AlertDescription>
-                      Failed to load sweepstakes entries. Please try again later.
+                      {error instanceof Error ? error.message : 'Failed to load sweepstakes entries. Please try again later.'}
                     </AlertDescription>
                   </Alert>
                 )}
