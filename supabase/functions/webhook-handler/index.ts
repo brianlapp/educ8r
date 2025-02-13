@@ -111,7 +111,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${beehiivApiKey}`,
       },
       body: JSON.stringify({
-        tags: ['sweeps', 'Comprendi-sweeps']  // Back to the original working version with 'tags'
+        tags: ['sweeps', 'Comprendi-sweeps']
       }),
     });
 
@@ -122,6 +122,48 @@ serve(async (req) => {
       console.error('Failed to add tags:', tagsResponseText);
     } else {
       console.log('Tags added successfully');
+    }
+
+    // Send conversion to Everflow
+    console.log('Sending conversion to Everflow...');
+    const everflowApiKey = Deno.env.get('EverflowAPI');
+    if (!everflowApiKey) {
+      console.error('Everflow API key not configured');
+    } else {
+      try {
+        const everflowPayload = {
+          offer_id: 1, // Adding required offer_id
+          conversion_type: 2, // CPA type
+          amount: 0.10,
+          currency_id: 1, // USD
+          status: 1, // Approved
+          affiliate_id: body.affiliate_id || "1",
+          sub1: body.email,
+          transaction_id: submissionData.id
+        };
+
+        console.log('Everflow payload:', JSON.stringify(everflowPayload, null, 2));
+
+        const everflowResponse = await fetch('https://api.eflow.team/v1/conversions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Eflow-API-Key': everflowApiKey
+          },
+          body: JSON.stringify(everflowPayload)
+        });
+
+        const everflowResponseText = await everflowResponse.text();
+        console.log('Everflow response:', everflowResponseText);
+
+        if (!everflowResponse.ok) {
+          console.error('Failed to send conversion to Everflow:', everflowResponseText);
+        } else {
+          console.log('Successfully sent conversion to Everflow');
+        }
+      } catch (error) {
+        console.error('Error sending conversion to Everflow:', error);
+      }
     }
 
     // Update the submission with Beehiiv ID
