@@ -12,6 +12,7 @@ declare global {
       urlParameter: (param: string) => string;
       impression: (params: any) => Promise<void>;
     };
+    EverflowGlobal: any;
   }
 }
 
@@ -21,53 +22,43 @@ const PapTest = () => {
   const [transactionId, setTransactionId] = useState<string | null>(null);
 
   useEffect(() => {
-    let scriptElement: HTMLScriptElement | null = null;
-
-    const initializeEverflow = () => {
-      scriptElement = document.createElement('script');
-      scriptElement.src = "https://www.eflow.team/scripts/sdk/everflow.js";
-      scriptElement.async = true;
-      
-      scriptElement.onload = () => {
-        // Wait for a moment to ensure SDK is initialized
-        setTimeout(() => {
-          if (typeof window.EF === 'undefined') {
-            console.error('Everflow SDK failed to initialize');
-            return;
-          }
-
-          try {
-            const affid = window.EF.urlParameter('affid');
-            if (affid) {
-              setReferralId(affid);
-              
-              // Track impression
-              window.EF.impression({
-                offer_id: window.EF.urlParameter('oid') || 1986,
-                affiliate_id: Number(affid),
-                uid: window.EF.urlParameter('uid') || 486,
-                sub1: 'test_impression'
-              }).then(() => {
-                console.log('Impression tracked successfully');
-              }).catch((error) => {
-                console.error('Error tracking impression:', error);
-              });
-            }
-          } catch (error) {
-            console.error('Error processing URL parameters:', error);
-          }
-        }, 1500); // Increased delay to 1.5 seconds
-      };
-
-      document.body.appendChild(scriptElement);
+    // Initialize Everflow with global configuration
+    window.EverflowGlobal = {
+      accountId: 1, // Replace with your actual Everflow account ID
+      debug: true
     };
 
-    initializeEverflow();
+    const script = document.createElement('script');
+    script.src = "https://www.eflow.team/scripts/sdk/everflow.js";
+    script.async = true;
+    document.body.appendChild(script);
 
-    // Cleanup function
+    script.onload = () => {
+      try {
+        const affid = window.EF.urlParameter('affid');
+        if (affid) {
+          setReferralId(affid);
+          
+          // Track impression
+          window.EF.impression({
+            offer_id: window.EF.urlParameter('oid') || 1986,
+            affiliate_id: Number(affid),
+            uid: window.EF.urlParameter('uid') || 486,
+            sub1: 'test_impression'
+          }).then(() => {
+            console.log('Impression tracked successfully');
+          }).catch((error) => {
+            console.error('Error tracking impression:', error);
+          });
+        }
+      } catch (error) {
+        console.error('Error processing URL parameters:', error);
+      }
+    };
+
     return () => {
-      if (scriptElement && document.body.contains(scriptElement)) {
-        document.body.removeChild(scriptElement);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
       }
     };
   }, []);
