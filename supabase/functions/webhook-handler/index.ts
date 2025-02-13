@@ -63,10 +63,10 @@ serve(async (req) => {
         send_welcome_email: true,
         utm_source: 'sweepwidget',
         utm_campaign: 'giveaway',
-        custom_fields: {
-          first_name: body.first_name,
-          last_name: body.last_name,
-        }
+        custom_fields: [
+          { name: "first_name", value: body.first_name },
+          { name: "last_name", value: body.last_name }
+        ]
       }),
     })
 
