@@ -24,20 +24,21 @@ const PapTest = () => {
 
   useEffect(() => {
     const initializeEverflow = async () => {
-      // Fetch Everflow account ID from Supabase
+      // Fetch Everflow config from Supabase
       const { data, error } = await supabase
         .from('everflow_config')
-        .select('account_id')
+        .select('network_id')
         .single();
 
       if (error) {
         console.error('Error fetching Everflow config:', error);
+        toast.error('Error initializing tracking. Please check configuration.');
         return;
       }
 
       // Initialize Everflow with global configuration
       window.EverflowGlobal = {
-        accountId: data.account_id,
+        accountId: data.network_id, // Using network_id instead of account_id
         debug: true
       };
 

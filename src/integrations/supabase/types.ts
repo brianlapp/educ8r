@@ -11,19 +11,22 @@ export type Database = {
     Tables: {
       everflow_config: {
         Row: {
-          account_id: number
+          api_key: string
           created_at: string
           id: number
+          network_id: number
         }
         Insert: {
-          account_id: number
+          api_key: string
           created_at?: string
           id?: number
+          network_id: number
         }
         Update: {
-          account_id?: number
+          api_key?: string
           created_at?: string
           id?: number
+          network_id?: number
         }
         Relationships: []
       }
