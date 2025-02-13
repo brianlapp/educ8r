@@ -111,7 +111,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${beehiivApiKey}`,
       },
       body: JSON.stringify({
-        tag_ids: ['sweeps', 'Comprendi-sweeps']  // These are the correct tag IDs that were working
+        tags: ['sweeps', 'Comprendi-sweeps']  // Back to the original working version with 'tags'
       }),
     });
 
