@@ -60,7 +60,8 @@ serve(async (req) => {
       custom_fields: [
         { name: "first_name", value: body.firstName },
         { name: "last_name", value: body.lastName }
-      ]
+      ],
+      tags: ['sweeps', 'Comprendi-sweeps'] // Added tags back to the payload
     }
     console.log('Beehiiv payload:', JSON.stringify(beehiivPayload, null, 2))
 
