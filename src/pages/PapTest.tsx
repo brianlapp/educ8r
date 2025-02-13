@@ -11,6 +11,7 @@ declare global {
       click: (params: any) => Promise<string>;
       conversion: (params: any) => Promise<{ conversion_id: string; transaction_id: string }>;
       urlParameter: (param: string) => string;
+      impression: (params: any) => Promise<void>;
     };
   }
 }
@@ -27,11 +28,24 @@ const PapTest = () => {
     script.async = true;
     document.body.appendChild(script);
 
-    // Get URL parameters when the script loads
-    script.onload = () => {
+    // Get URL parameters and track impression when the script loads
+    script.onload = async () => {
       const affid = window.EF?.urlParameter('affid');
       if (affid) {
         setReferralId(affid);
+        
+        try {
+          // Track impression when page loads with referral parameters
+          await window.EF.impression({
+            offer_id: window.EF.urlParameter('oid') || 1986,
+            affiliate_id: Number(affid),
+            uid: window.EF.urlParameter('uid') || 486,
+            sub1: 'test_impression'
+          });
+          console.log('Impression tracked successfully');
+        } catch (error) {
+          console.error('Error tracking impression:', error);
+        }
       }
     };
 
