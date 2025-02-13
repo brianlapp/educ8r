@@ -9,6 +9,24 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      everflow_config: {
+        Row: {
+          account_id: number
+          created_at: string
+          id: number
+        }
+        Insert: {
+          account_id: number
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          account_id?: number
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
       form_submissions: {
         Row: {
           beehiiv_id: string | null
