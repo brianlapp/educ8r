@@ -12,33 +12,30 @@ export const EverflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // Create a promise that resolves when Everflow is ready
-    const everflowPromise = new Promise<void>((resolve) => {
-      // Function to check if EF is initialized
-      const checkEF = () => {
-        if (window.EF && typeof window.EF.click === 'function') {
-          setIsReady(true);
-          resolve();
-        } else {
-          setTimeout(checkEF, 100); // Check again in 100ms
-        }
-      };
-
-      // Start checking
-      checkEF();
-    });
-
-    // Add Everflow script
+    // Add Everflow script first
     const script = document.createElement('script');
     script.src = "https://www.eflow.team/scripts/sdk/everflow.js";
     script.async = true;
     document.body.appendChild(script);
+
+    // Start checking for EF initialization
+    const checkEF = () => {
+      if (window.EF && typeof window.EF.click === 'function') {
+        setIsReady(true);
+      } else {
+        setTimeout(checkEF, 100); // Check again in 100ms
+      }
+    };
+
+    // Start checking immediately after script is added
+    checkEF();
 
     return () => {
       const script = document.querySelector('script[src="https://www.eflow.team/scripts/sdk/everflow.js"]');
       if (script && document.body.contains(script)) {
         document.body.removeChild(script);
       }
+      setIsReady(false);
     };
   }, []);
 
