@@ -64,8 +64,8 @@ serve(async (req) => {
         utm_source: 'sweepwidget',
         utm_campaign: 'giveaway',
         custom_fields: [
-          { name: "first_name", value: body.first_name },
-          { name: "last_name", value: body.last_name }
+          { name: "first_name", value: body.firstName }, // Changed from first_name to firstName
+          { name: "last_name", value: body.lastName }    // Changed from last_name to lastName
         ]
       }),
     })
