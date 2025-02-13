@@ -64,6 +64,18 @@ const Login = () => {
       if (error) throw error;
 
       if (user) {
+        const { data: role, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (roleError) throw roleError;
+
+        if (!role) {
+          throw new Error('Access denied. Please contact an administrator.');
+        }
+
         toast({
           title: "Login successful",
           description: "Welcome back!",

@@ -14,7 +14,20 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         setIsAuthenticated(false);
         return;
       }
-      setIsAuthenticated(true);
+
+      const { data: role, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking role:', error);
+        setIsAuthenticated(false);
+        return;
+      }
+
+      setIsAuthenticated(!!role);
     };
 
     checkAuth();
