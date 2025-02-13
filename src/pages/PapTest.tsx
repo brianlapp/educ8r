@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { BeehiivTest } from "@/components/BeehiivTest";
+import { supabase } from "@/integrations/supabase/client";
 
 declare global {
   interface Window {
     EF: {
       click: (params: any) => Promise<string>;
       conversion: (params: any) => Promise<{ conversion_id: string; transaction_id: string }>;
+      urlParameter: (param: string) => string;
     };
   }
 }
@@ -24,6 +26,14 @@ const PapTest = () => {
     script.src = "https://www.eflow.team/scripts/sdk/everflow.js";
     script.async = true;
     document.body.appendChild(script);
+
+    // Get URL parameters when the script loads
+    script.onload = () => {
+      const affid = window.EF?.urlParameter('affid');
+      if (affid) {
+        setReferralId(affid);
+      }
+    };
 
     return () => {
       document.body.removeChild(script);
@@ -43,8 +53,9 @@ const PapTest = () => {
     
     try {
       const tid = await window.EF.click({
-        offer_id: 1,
+        offer_id: window.EF.urlParameter('oid') || 1986, // Use URL parameter or default
         affiliate_id: Number(referralId),
+        uid: window.EF.urlParameter('uid') || 486, // Use URL parameter or default
         sub1: 'test_click'
       });
 
@@ -71,7 +82,7 @@ const PapTest = () => {
     setIsLoading(true);
     try {
       const { conversion_id, transaction_id } = await window.EF.conversion({
-        offer_id: 1,
+        offer_id: window.EF.urlParameter('oid') || 1986, // Use URL parameter or default
         transaction_id: transactionId, // Use the stored transaction ID from the click
         amount: 0,
         email: 'test@example.com'
@@ -154,9 +165,9 @@ const PapTest = () => {
               <h2 className="text-lg font-semibold mb-2">Test Links</h2>
               <div className="space-y-2">
                 <div>
-                  <p className="text-sm font-medium">Click Test URL:</p>
+                  <p className="text-sm font-medium">Direct Link Format:</p>
                   <code className="block bg-gray-100 p-2 rounded text-sm break-all">
-                    {`${window.location.origin}/pap-test-click?sweeps=${referralId}`}
+                    https://educ8r.freeparentsearch.com/pap-test?uid=486&oid=1986&affid={referralId}
                   </code>
                 </div>
               </div>
@@ -169,7 +180,7 @@ const PapTest = () => {
           <ol className="list-decimal list-inside space-y-2 text-sm">
             <li>Go to the main form and submit your entry with your real email</li>
             <li>Copy your Referral ID from the thank you page</li>
-            <li>Paste your Referral ID above</li>
+            <li>Use the direct link format above with your Referral ID</li>
             <li>Use the "Test Click" button to test click tracking</li>
             <li>Use "Simulate Conversion" to test conversion tracking</li>
             <li>Check your Everflow dashboard to verify the click and conversion</li>
