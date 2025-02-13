@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -246,7 +245,7 @@ Best regards`;
             <h2 className="text-xl font-semibold text-blue-900 mb-4">Want Another Entry?</h2>
             <p className="text-blue-700 mb-4">Sign up for Comprendi Reading Lessons and get an extra entry!</p>
             <Button 
-              onClick={() => window.open('https://dmlearninglab.com/homesc/', '_blank')}  {/* Updated URL */}
+              onClick={() => window.open('https://dmlearninglab.com/homesc/', '_blank')}
               className="w-full md:w-auto"
             >
               Sign Up Now
