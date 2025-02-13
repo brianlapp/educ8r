@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "react-router-dom";
+import { useEverflow } from "@/contexts/EverflowContext";
 
 const ThankYou = () => {
   const { toast } = useToast();
+  const { trackClick } = useEverflow();
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [isTemplateCopied, setIsTemplateCopied] = useState(false);
   const [referralUrl, setReferralUrl] = useState("");
@@ -47,6 +49,12 @@ Best regards`;
           if (papError) throw papError;
           if (papData?.referralUrl) {
             setReferralUrl(papData.referralUrl);
+            // Track successful referral URL generation
+            trackClick({ 
+              type: 'referral_url_generated',
+              email,
+              networkAffiliateId
+            });
           }
         } catch (err) {
           console.error('Error getting referral URL:', err);
@@ -69,12 +77,13 @@ Best regards`;
     };
 
     initializePage();
-  }, [location.search, toast]);
+  }, [location.search, toast, trackClick]);
 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(referralUrl);
       setIsLinkCopied(true);
+      trackClick({ type: 'referral_link_copied' });
       toast({
         title: "Link copied!",
         description: "The link has been copied to your clipboard.",
@@ -93,6 +102,7 @@ Best regards`;
     try {
       await navigator.clipboard.writeText(emailTemplate);
       setIsTemplateCopied(true);
+      trackClick({ type: 'email_template_copied' });
       toast({
         title: "Template copied!",
         description: "The email template has been copied to your clipboard.",
@@ -131,6 +141,7 @@ Best regards`;
     }
     
     if (url) {
+      trackClick({ type: 'share_click', platform });
       window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
@@ -246,7 +257,10 @@ Best regards`;
             <h2 className="text-xl font-semibold text-blue-900 mb-4">Want Another Entry?</h2>
             <p className="text-blue-700 mb-4">Sign up for Comprendi Reading Lessons and get an extra entry!</p>
             <Button 
-              onClick={() => window.open('https://dmlearninglab.com/homesc/', '_blank')}
+              onClick={() => {
+                trackClick({ type: 'comprendi_signup_click' });
+                window.open('https://dmlearninglab.com/homesc/', '_blank');
+              }}
               className="w-full md:w-auto"
             >
               Sign Up Now

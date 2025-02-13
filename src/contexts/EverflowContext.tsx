@@ -12,32 +12,29 @@ export const EverflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // Create a promise that resolves when Everflow is ready
-    const everflowPromise = new Promise<void>((resolve) => {
-      // Function to check if EF is initialized
-      const checkEF = () => {
-        if (window.EF && typeof window.EF.click === 'function') {
-          setIsReady(true);
-          resolve();
-        } else {
-          setTimeout(checkEF, 100); // Check again in 100ms
-        }
-      };
-
-      // Start checking
-      checkEF();
-    });
-
-    // Add Everflow script
     const script = document.createElement('script');
     script.src = "https://www.eflow.team/scripts/sdk/everflow.js";
     script.async = true;
+    
+    script.onload = () => {
+      const checkEF = () => {
+        if (window.EF && typeof window.EF.click === 'function') {
+          console.log('Everflow initialized successfully');
+          setIsReady(true);
+        } else {
+          console.log('Waiting for Everflow to initialize...');
+          setTimeout(checkEF, 100);
+        }
+      };
+      checkEF();
+    };
+
     document.body.appendChild(script);
 
     return () => {
-      const script = document.querySelector('script[src="https://www.eflow.team/scripts/sdk/everflow.js"]');
-      if (script && document.body.contains(script)) {
-        document.body.removeChild(script);
+      const loadedScript = document.querySelector('script[src="https://www.eflow.team/scripts/sdk/everflow.js"]');
+      if (loadedScript && document.body.contains(loadedScript)) {
+        document.body.removeChild(loadedScript);
       }
     };
   }, []);
@@ -48,6 +45,7 @@ export const EverflowProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return;
     }
     try {
+      console.log('Tracking click with params:', params);
       window.EF.click(params);
     } catch (error) {
       console.error('Error tracking click:', error);
