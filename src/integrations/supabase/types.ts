@@ -226,6 +226,7 @@ export type Database = {
           is_winner: boolean | null
           last_name: string
           network_affiliate_id: string | null
+          pap_referral_id: string | null
           postal_code: string | null
           referral_count: number | null
           referral_url: string | null
@@ -249,6 +250,7 @@ export type Database = {
           is_winner?: boolean | null
           last_name: string
           network_affiliate_id?: string | null
+          pap_referral_id?: string | null
           postal_code?: string | null
           referral_count?: number | null
           referral_url?: string | null
@@ -272,6 +274,7 @@ export type Database = {
           is_winner?: boolean | null
           last_name?: string
           network_affiliate_id?: string | null
+          pap_referral_id?: string | null
           postal_code?: string | null
           referral_count?: number | null
           referral_url?: string | null
