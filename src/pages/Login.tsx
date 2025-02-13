@@ -15,6 +15,41 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data: { user }, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (user) {
+        // Add admin role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert([
+            { user_id: user.id, role: 'admin' }
+          ]);
+
+        if (roleError) throw roleError;
+
+        toast({
+          title: "Account created",
+          description: "Please check your email to confirm your account.",
+        });
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to create account');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -101,13 +136,22 @@ const Login = () => {
             </div>
           </div>
 
-          <div>
+          <div className="flex gap-4">
             <Button
               type="submit"
-              className="w-full"
+              className="flex-1"
               disabled={loading}
             >
               {loading ? "Signing in..." : "Sign in"}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSignup}
+              variant="outline"
+              className="flex-1"
+              disabled={loading}
+            >
+              {loading ? "Creating..." : "Create Account"}
             </Button>
           </div>
         </form>
