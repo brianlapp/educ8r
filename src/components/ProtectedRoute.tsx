@@ -15,12 +15,17 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      const { data: roles } = await supabase
+      const { data: roles, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', session.user.id)
-        .eq('role', 'admin')
         .maybeSingle();
+
+      if (error) {
+        console.error('Error checking roles:', error);
+        setIsAuthenticated(false);
+        return;
+      }
 
       setIsAuthenticated(!!roles);
     };

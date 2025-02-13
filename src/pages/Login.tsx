@@ -63,17 +63,15 @@ const Login = () => {
       if (error) throw error;
 
       if (user) {
-        // Simplified role check
-        const { data: roles, error: roleError } = await supabase
+        const { data: role, error: roleError } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
-          .eq('role', 'admin')
           .maybeSingle();
 
         if (roleError) throw roleError;
 
-        if (!roles) {
+        if (!role) {
           await supabase.auth.signOut();
           throw new Error('Unauthorized access');
         }
