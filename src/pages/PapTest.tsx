@@ -1,13 +1,61 @@
 
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { BeehiivTest } from "@/components/BeehiivTest";
+
+declare global {
+  interface Window {
+    EF: {
+      click: (params: any) => Promise<string>;
+      conversion: (params: any) => Promise<{ conversion_id: string; transaction_id: string }>;
+    };
+  }
+}
 
 const PapTest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [referralId, setReferralId] = useState("");
+  const [transactionId, setTransactionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Add Everflow SDK script
+    const script = document.createElement('script');
+    script.src = "https://www.eflow.team/scripts/sdk/everflow.js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const testClick = async () => {
+    if (!referralId) {
+      toast.error("Please enter a Referral ID");
+      return;
+    }
+
+    if (!window.EF) {
+      toast.error("Everflow SDK not loaded yet. Please try again.");
+      return;
+    }
+    
+    try {
+      const tid = await window.EF.click({
+        offer_id: 1,
+        affiliate_id: Number(referralId),
+        sub1: 'test_click'
+      });
+
+      setTransactionId(tid);
+      toast.success("Click recorded successfully!");
+      console.log("Click recorded with transaction ID:", tid);
+    } catch (error) {
+      console.error("Error testing click:", error);
+      toast.error("Click test failed");
+    }
+  };
 
   const simulateConversion = async () => {
     if (!referralId) {
@@ -15,51 +63,35 @@ const PapTest = () => {
       return;
     }
 
+    if (!window.EF) {
+      toast.error("Everflow SDK not loaded yet. Please try again.");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const testData = {
-        affiliate_id: referralId,
-        click_id: `test_click_${Date.now()}`,
-        status: 'approved',
+      const { conversion_id, transaction_id } = await window.EF.conversion({
+        offer_id: 1,
+        transaction_id: transactionId, // Use the stored transaction ID from the click
+        amount: 0,
         email: 'test@example.com'
-      };
+      });
 
-      const { data, error } = await supabase.functions.invoke('pap-webhook', {
-        body: testData
+      console.log("Conversion recorded:", { conversion_id, transaction_id });
+
+      // Now update entry count in Supabase
+      const { error } = await supabase.rpc('increment_referral_count', {
+        p_referral_id: referralId
       });
 
       if (error) throw error;
 
       toast.success("Conversion simulated successfully!");
-      console.log("Webhook response:", data);
     } catch (error) {
       console.error("Error simulating conversion:", error);
       toast.error("Failed to simulate conversion");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const testClick = async () => {
-    if (!referralId) {
-      toast.error("Please enter a Referral ID");
-      return;
-    }
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('pap-webhook', {
-        body: {
-          type: 'click',
-          sweeps: referralId
-        }
-      });
-
-      if (error) throw error;
-      toast.success("Click test successful!");
-      console.log("Click test response:", data);
-    } catch (error) {
-      console.error("Error testing click:", error);
-      toast.error("Click test failed");
     }
   };
 
@@ -100,7 +132,7 @@ const PapTest = () => {
                 <div>
                   <Button
                     onClick={simulateConversion}
-                    disabled={isLoading || !referralId}
+                    disabled={isLoading || !referralId || !transactionId}
                     className="w-full"
                   >
                     {isLoading ? "Simulating..." : "Simulate Conversion"}
@@ -109,6 +141,15 @@ const PapTest = () => {
               </div>
             </div>
 
+            {transactionId && (
+              <div>
+                <h2 className="text-lg font-semibold mb-2">Transaction Details</h2>
+                <div className="bg-gray-100 p-2 rounded">
+                  <p className="text-sm break-all">Transaction ID: {transactionId}</p>
+                </div>
+              </div>
+            )}
+
             <div>
               <h2 className="text-lg font-semibold mb-2">Test Links</h2>
               <div className="space-y-2">
@@ -116,13 +157,6 @@ const PapTest = () => {
                   <p className="text-sm font-medium">Click Test URL:</p>
                   <code className="block bg-gray-100 p-2 rounded text-sm break-all">
                     {`${window.location.origin}/pap-test-click?sweeps=${referralId}`}
-                  </code>
-                </div>
-                
-                <div>
-                  <p className="text-sm font-medium">Webhook URL:</p>
-                  <code className="block bg-gray-100 p-2 rounded text-sm break-all">
-                    {`${window.location.origin}/functions/pap-webhook`}
                   </code>
                 </div>
               </div>
