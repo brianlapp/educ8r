@@ -1,9 +1,33 @@
+
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const Admin = () => {
+  const { data: entries, isLoading, error } = useQuery({
+    queryKey: ['sweepstakes-entries'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sweepstakes_entries')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
@@ -11,27 +35,66 @@ const Admin = () => {
       <main className="flex-grow w-full pt-28 pb-12 bg-gray-50">
         <div className="w-full max-w-7xl mx-auto px-4 lg:px-8">
           <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h1 className="text-2xl font-bold mb-6">Admin Settings</h1>
+            <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
             
             <div className="space-y-6">
-              <Alert variant="destructive">
+              <div className="overflow-x-auto">
+                <h2 className="text-lg font-semibold mb-4">Sweepstakes Entries</h2>
+                
+                {isLoading && (
+                  <p className="text-gray-600">Loading entries...</p>
+                )}
+
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>
+                      Failed to load sweepstakes entries. Please try again later.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {entries && entries.length > 0 && (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead className="text-right">Entries</TableHead>
+                        <TableHead className="text-right">Referrals</TableHead>
+                        <TableHead>Joined</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {entries.map((entry) => (
+                        <TableRow key={entry.id}>
+                          <TableCell className="font-medium">{entry.email}</TableCell>
+                          <TableCell>{`${entry.first_name} ${entry.last_name}`}</TableCell>
+                          <TableCell className="text-right">{entry.entry_count}</TableCell>
+                          <TableCell className="text-right">{entry.referral_count}</TableCell>
+                          <TableCell>
+                            {new Date(entry.created_at).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+
+                {entries && entries.length === 0 && (
+                  <p className="text-gray-600">No entries found.</p>
+                )}
+              </div>
+
+              <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Premium Features Not Available</AlertTitle>
+                <AlertTitle>Need More Advanced Queries?</AlertTitle>
                 <AlertDescription>
-                  Some features like webhooks and custom redirects require a premium Gleam subscription. 
-                  These features are currently not available in our plan tier. Users will need to complete 
-                  the entry form directly through Gleam&apos;s interface.
+                  For more advanced data analysis, you can use the Supabase Dashboard directly.
+                  This includes custom SQL queries, filtering, and detailed analytics.
                 </AlertDescription>
               </Alert>
-
-              <div className="mt-4">
-                <h2 className="text-lg font-semibold mb-2">Available Features</h2>
-                <ul className="list-disc list-inside space-y-2 text-gray-600">
-                  <li>Basic entry collection through Gleam widget</li>
-                  <li>Standard Gleam entry validation</li>
-                  <li>Entry tracking within Gleam dashboard</li>
-                </ul>
-              </div>
             </div>
           </div>
         </div>
