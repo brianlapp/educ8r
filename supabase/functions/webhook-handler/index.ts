@@ -113,45 +113,6 @@ serve(async (req) => {
       throw updateError
     }
 
-    // Get the Zapier webhook URL from the database
-    console.log('Fetching Zapier webhook URL...')
-    const { data: webhookConfig, error: webhookError } = await supabaseClient
-      .from('webhook_configs')
-      .select('zapier_webhook_url')
-      .limit(1)
-      .maybeSingle() // Changed from single() to maybeSingle()
-
-    if (webhookError) {
-      console.error('Error fetching webhook URL:', webhookError)
-      // Don't throw here, just log and continue
-      console.log('Skipping Zapier webhook due to configuration error')
-    } else if (!webhookConfig?.zapier_webhook_url) {
-      console.log('No Zapier webhook URL configured, skipping Zapier integration')
-    } else {
-      console.log('Forwarding data to Zapier...')
-      // Forward the data to Zapier
-      try {
-        const zapierResponse = await fetch(webhookConfig.zapier_webhook_url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-        })
-
-        if (!zapierResponse.ok) {
-          console.error('Zapier response not OK:', zapierResponse.statusText)
-          // Don't throw here, just log the error
-          console.log('Failed to forward to Zapier but continuing')
-        } else {
-          console.log('Successfully forwarded to Zapier')
-        }
-      } catch (zapierError) {
-        console.error('Error calling Zapier webhook:', zapierError)
-        // Don't throw here, just log the error
-      }
-    }
-
     return new Response(
       JSON.stringify({ success: true }),
       { 
