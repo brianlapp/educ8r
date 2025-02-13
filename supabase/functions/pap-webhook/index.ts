@@ -41,23 +41,29 @@ serve(async (req) => {
       }
 
       try {
-        const everflowResponse = await fetch('https://api.eflow.team/v1/track', {
+        // Log the request we're about to make
+        const clickPayload = {
+          offer_id: '1', // Required by Everflow
+          affiliate_id: sweeps,
+          sub1: 'test_click',
+          transaction_id: `test_${Date.now()}`, // Required for tracking
+        };
+        console.log('Sending click to Everflow:', clickPayload);
+
+        const everflowResponse = await fetch('https://api.eflow.team/v1/affiliates/record-event', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-Eflow-API-Key': EVERFLOW_API_KEY
           },
-          body: JSON.stringify({
-            type: 'click',
-            source_affid: sweeps,
-            api_key: EVERFLOW_API_KEY,
-            sub1: 'test_click'
-          })
+          body: JSON.stringify(clickPayload)
         });
 
+        const responseText = await everflowResponse.text();
+        console.log('Everflow response:', responseText);
+
         if (!everflowResponse.ok) {
-          const errorText = await everflowResponse.text();
-          throw new Error(`Everflow API error: ${errorText}`);
+          throw new Error(`Everflow API error: ${responseText}`);
         }
 
         console.log('Click recorded in Everflow successfully');
@@ -106,23 +112,30 @@ serve(async (req) => {
         }
 
         try {
-          const everflowResponse = await fetch('https://api.eflow.team/v1/track', {
+          // Log the request we're about to make
+          const conversionPayload = {
+            offer_id: '1', // Required by Everflow
+            affiliate_id: affiliateId,
+            sub1: 'test_conversion',
+            transaction_id: trackingId,
+            amount: 0
+          };
+          console.log('Sending conversion to Everflow:', conversionPayload);
+
+          const everflowResponse = await fetch('https://api.eflow.team/v1/affiliates/record-event', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'X-Eflow-API-Key': EVERFLOW_API_KEY
             },
-            body: JSON.stringify({
-              type: 'conversion',
-              source_affid: affiliateId,
-              transaction_id: trackingId,
-              api_key: EVERFLOW_API_KEY
-            })
+            body: JSON.stringify(conversionPayload)
           });
 
+          const responseText = await everflowResponse.text();
+          console.log('Everflow response:', responseText);
+
           if (!everflowResponse.ok) {
-            const errorText = await everflowResponse.text();
-            throw new Error(`Everflow API error: ${errorText}`);
+            throw new Error(`Everflow API error: ${responseText}`);
           }
 
           console.log('Conversion recorded in Everflow successfully');
