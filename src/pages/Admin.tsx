@@ -5,7 +5,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 import {
   Table,
   TableBody,
@@ -15,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const AdminDashboard = () => {
+const Admin = () => {
   const { data: entries, isLoading, error } = useQuery({
     queryKey: ['sweepstakes-entries'],
     queryFn: async () => {
@@ -24,10 +23,7 @@ const AdminDashboard = () => {
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) {
-        console.error('Error fetching entries:', error);
-        throw error;
-      }
+      if (error) throw error;
       return data;
     }
   });
@@ -54,7 +50,7 @@ const AdminDashboard = () => {
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Error</AlertTitle>
                     <AlertDescription>
-                      {error instanceof Error ? error.message : 'Failed to load sweepstakes entries. Please try again later.'}
+                      Failed to load sweepstakes entries. Please try again later.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -106,14 +102,6 @@ const AdminDashboard = () => {
 
       <Footer />
     </div>
-  );
-};
-
-const Admin = () => {
-  return (
-    <ProtectedRoute>
-      <AdminDashboard />
-    </ProtectedRoute>
   );
 };
 

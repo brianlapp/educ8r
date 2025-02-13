@@ -330,27 +330,6 @@ export type Database = {
           },
         ]
       }
-      user_roles: {
-        Row: {
-          created_at: string | null
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
       webhook_configs: {
         Row: {
           created_at: string | null
@@ -410,25 +389,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      check_user_role: {
-        Args: {
-          user_id: string
-          role_name: Database["public"]["Enums"]["app_role"]
-        }
-        Returns: boolean
-      }
       deploy_widget_version: {
         Args: {
           p_version_id: string
           p_bundle_hash: string
         }
         Returns: undefined
-      }
-      has_role: {
-        Args: {
-          role: Database["public"]["Enums"]["app_role"]
-        }
-        Returns: boolean
       }
       increment_referral_count: {
         Args: {
@@ -442,13 +408,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_authenticated: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
     }
     Enums: {
-      app_role: "admin" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
