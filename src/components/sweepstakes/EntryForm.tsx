@@ -42,6 +42,7 @@ export const EntryForm = () => {
     try {
       console.log('Submitting form data:', formData);
       
+      // Get active sweepstakes
       const { data: sweepstakesData, error: sweepstakesError } = await supabase
         .from('sweepstakes')
         .select()
@@ -53,27 +54,26 @@ export const EntryForm = () => {
       }
 
       const sweepstakes_id = sweepstakesData.id;
-      
-      const { data: submissionData, error: submissionError } = await supabase
-        .from('form_submissions')
+
+      // Create sweepstakes entry
+      const { error: entryError } = await supabase
+        .from('sweepstakes_entries')
         .insert([
           {
-            submission_data: {
-              first_name: formData.firstName,
-              last_name: formData.lastName,
-              email: formData.email,
-              sweepstakes_id
-            },
-            processed: false
+            sweepstakes_id,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            terms_accepted: agreed
           }
-        ])
-        .select();
+        ]);
 
-      if (submissionError) {
-        throw submissionError;
+      if (entryError) {
+        throw entryError;
       }
 
-      const { data: beehiivData, error: beehiivError } = await supabase.functions.invoke('beehiiv-sync', {
+      // Call webhook handler
+      const { error: webhookError } = await supabase.functions.invoke('webhook-handler', {
         body: {
           first_name: formData.firstName,
           last_name: formData.lastName,
@@ -82,32 +82,9 @@ export const EntryForm = () => {
         }
       });
 
-      if (beehiivError) {
-        if (beehiivError.message && beehiivError.message.includes('duplicate_entry')) {
-          toast({
-            variant: "destructive",
-            title: "Already Entered",
-            description: "You have already entered this sweepstakes.",
-          });
-          navigate(`/thank-you?email=${encodeURIComponent(formData.email)}&sweepstakes_id=${sweepstakes_id}`);
-          return;
-        }
-        console.error('Beehiiv sync error:', beehiivError);
-        throw beehiivError;
-      }
-
-      const { error: newsletterError } = await supabase
-        .from('newsletter_submissions')
-        .insert([
-          {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: formData.email
-          }
-        ]);
-
-      if (newsletterError) {
-        throw newsletterError;
+      if (webhookError) {
+        console.error('Webhook error:', webhookError);
+        throw webhookError;
       }
 
       toast({
