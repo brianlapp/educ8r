@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -24,21 +23,9 @@ const PapTest = () => {
 
   useEffect(() => {
     const initializeEverflow = async () => {
-      // Fetch Everflow config from Supabase
-      const { data, error } = await supabase
-        .from('everflow_config')
-        .select('network_id')
-        .single();
-
-      if (error) {
-        console.error('Error fetching Everflow config:', error);
-        toast.error('Error initializing tracking. Please check configuration.');
-        return;
-      }
-
       // Initialize Everflow with global configuration
       window.EverflowGlobal = {
-        accountId: data.network_id, // Using network_id instead of account_id
+        accountId: 1, // Using the default value that was working before
         debug: true
       };
 
