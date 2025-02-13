@@ -29,7 +29,6 @@ const Login = () => {
       if (error) throw error;
 
       if (user) {
-        // Add admin role
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert([
@@ -64,12 +63,15 @@ const Login = () => {
       if (error) throw error;
 
       if (user) {
-        const { data: roles } = await supabase
+        // Simplified role check
+        const { data: roles, error: roleError } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
           .eq('role', 'admin')
-          .single();
+          .maybeSingle();
+
+        if (roleError) throw roleError;
 
         if (!roles) {
           await supabase.auth.signOut();
