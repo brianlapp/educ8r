@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -22,47 +21,54 @@ const PapTest = () => {
   const [transactionId, setTransactionId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Add Everflow SDK script
-    const script = document.createElement('script');
-    script.src = "https://www.eflow.team/scripts/sdk/everflow.js";
-    script.async = true;
-    document.body.appendChild(script);
+    let scriptElement: HTMLScriptElement | null = null;
 
-    // Get URL parameters and track impression when the script loads
-    script.onload = () => {
-      // Give the SDK a moment to initialize
-      setTimeout(async () => {
-        try {
-          if (!window.EF) {
-            console.error('Everflow SDK not found after load');
+    const initializeEverflow = () => {
+      scriptElement = document.createElement('script');
+      scriptElement.src = "https://www.eflow.team/scripts/sdk/everflow.js";
+      scriptElement.async = true;
+      
+      scriptElement.onload = () => {
+        // Wait for a moment to ensure SDK is initialized
+        setTimeout(() => {
+          if (typeof window.EF === 'undefined') {
+            console.error('Everflow SDK failed to initialize');
             return;
           }
 
-          const affid = window.EF.urlParameter('affid');
-          if (affid) {
-            setReferralId(affid);
-            
-            try {
-              // Track impression when page loads with referral parameters
-              await window.EF.impression({
+          try {
+            const affid = window.EF.urlParameter('affid');
+            if (affid) {
+              setReferralId(affid);
+              
+              // Track impression
+              window.EF.impression({
                 offer_id: window.EF.urlParameter('oid') || 1986,
                 affiliate_id: Number(affid),
                 uid: window.EF.urlParameter('uid') || 486,
                 sub1: 'test_impression'
+              }).then(() => {
+                console.log('Impression tracked successfully');
+              }).catch((error) => {
+                console.error('Error tracking impression:', error);
               });
-              console.log('Impression tracked successfully');
-            } catch (error) {
-              console.error('Error tracking impression:', error);
             }
+          } catch (error) {
+            console.error('Error processing URL parameters:', error);
           }
-        } catch (error) {
-          console.error('Error initializing Everflow:', error);
-        }
-      }, 1000); // Wait 1 second for SDK to initialize
+        }, 1500); // Increased delay to 1.5 seconds
+      };
+
+      document.body.appendChild(scriptElement);
     };
 
+    initializeEverflow();
+
+    // Cleanup function
     return () => {
-      document.body.removeChild(script);
+      if (scriptElement && document.body.contains(scriptElement)) {
+        document.body.removeChild(scriptElement);
+      }
     };
   }, []);
 
@@ -72,16 +78,16 @@ const PapTest = () => {
       return;
     }
 
-    if (!window.EF) {
+    if (typeof window.EF === 'undefined') {
       toast.error("Everflow SDK not loaded yet. Please try again.");
       return;
     }
     
     try {
       const tid = await window.EF.click({
-        offer_id: window.EF.urlParameter('oid') || 1986, // Use URL parameter or default
+        offer_id: window.EF.urlParameter('oid') || 1986,
         affiliate_id: Number(referralId),
-        uid: window.EF.urlParameter('uid') || 486, // Use URL parameter or default
+        uid: window.EF.urlParameter('uid') || 486,
         sub1: 'test_click'
       });
 
@@ -100,7 +106,7 @@ const PapTest = () => {
       return;
     }
 
-    if (!window.EF) {
+    if (typeof window.EF === 'undefined') {
       toast.error("Everflow SDK not loaded yet. Please try again.");
       return;
     }
@@ -108,8 +114,8 @@ const PapTest = () => {
     setIsLoading(true);
     try {
       const { conversion_id, transaction_id } = await window.EF.conversion({
-        offer_id: window.EF.urlParameter('oid') || 1986, // Use URL parameter or default
-        transaction_id: transactionId, // Use the stored transaction ID from the click
+        offer_id: window.EF.urlParameter('oid') || 1986,
+        transaction_id: transactionId,
         amount: 0,
         email: 'test@example.com'
       });
