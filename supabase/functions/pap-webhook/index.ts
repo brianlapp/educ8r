@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('PAP webhook received');
+    console.log('Tracking webhook received');
     
     // Parse request body once
     const body = await req.json();
@@ -54,19 +54,19 @@ serve(async (req) => {
     // Handle conversion events
     if (type !== 'click') {
       const {
-        refid: referrerId,
-        clickid: papTrackingId,
-        commission_status: status,
+        affiliate_id: affiliateId,
+        click_id: trackingId,
+        status,
         email: referredEmail
       } = body;
 
-      if (!referrerId || !papTrackingId || !status || !referredEmail) {
-        throw new Error('Missing required fields in PAP webhook payload');
+      if (!affiliateId || !trackingId || !status || !referredEmail) {
+        throw new Error('Missing required fields in tracking webhook payload');
       }
 
       console.log('Processing conversion event:', {
-        referrerId,
-        papTrackingId,
+        affiliateId,
+        trackingId,
         status,
         referredEmail
       });
@@ -79,7 +79,7 @@ serve(async (req) => {
         const { error: referralError } = await supabaseClient
           .from('referrals')
           .update({ converted: true })
-          .eq('pap_tracking_id', papTrackingId);
+          .eq('tracking_id', trackingId);
 
         if (referralError) {
           console.error('Error updating referral:', referralError);
@@ -89,7 +89,7 @@ serve(async (req) => {
         // Now increment the entry count for the referrer
         const { error: entryError } = await supabaseClient.rpc(
           'increment_referral_count',
-          { p_referral_id: referrerId }
+          { p_referral_id: affiliateId }
         );
 
         if (entryError) {
@@ -101,7 +101,7 @@ serve(async (req) => {
         const { data: referrerEntry, error: findError } = await supabaseClient
           .from('sweepstakes_entries')
           .select('id, beehiiv_subscriber_id, entry_count')
-          .eq('pap_referral_id', referrerId)
+          .eq('affiliate_id', affiliateId)
           .maybeSingle();
 
         if (findError) {
@@ -148,7 +148,7 @@ serve(async (req) => {
           }
         }
 
-        console.log('Successfully processed PAP conversion');
+        console.log('Successfully processed conversion');
       }
     }
 
@@ -160,7 +160,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in pap-webhook:', error);
+    console.error('Error in tracking-webhook:', error);
     console.error('Full error details:', {
       name: error.name,
       message: error.message,
@@ -176,3 +176,4 @@ serve(async (req) => {
     );
   }
 });
+

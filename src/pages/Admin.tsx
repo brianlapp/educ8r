@@ -63,6 +63,7 @@ const Admin = () => {
                         <TableHead>Name</TableHead>
                         <TableHead className="text-right">Entries</TableHead>
                         <TableHead className="text-right">Referrals</TableHead>
+                        <TableHead>Affiliate ID</TableHead>
                         <TableHead>Joined</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -73,6 +74,7 @@ const Admin = () => {
                           <TableCell>{`${entry.first_name} ${entry.last_name}`}</TableCell>
                           <TableCell className="text-right">{entry.entry_count}</TableCell>
                           <TableCell className="text-right">{entry.referral_count}</TableCell>
+                          <TableCell>{entry.affiliate_id || 'N/A'}</TableCell>
                           <TableCell>
                             {new Date(entry.created_at).toLocaleDateString()}
                           </TableCell>
@@ -106,3 +108,4 @@ const Admin = () => {
 };
 
 export default Admin;
+

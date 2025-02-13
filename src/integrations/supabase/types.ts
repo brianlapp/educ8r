@@ -101,27 +101,27 @@ export type Database = {
           converted: boolean | null
           created_at: string
           id: string
-          pap_tracking_id: string | null
           referred_email: string
           referrer_id: string | null
+          tracking_id: string | null
           updated_at: string
         }
         Insert: {
           converted?: boolean | null
           created_at?: string
           id?: string
-          pap_tracking_id?: string | null
           referred_email: string
           referrer_id?: string | null
+          tracking_id?: string | null
           updated_at?: string
         }
         Update: {
           converted?: boolean | null
           created_at?: string
           id?: string
-          pap_tracking_id?: string | null
           referred_email?: string
           referrer_id?: string | null
+          tracking_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -211,6 +211,7 @@ export type Database = {
       }
       sweepstakes_entries: {
         Row: {
+          affiliate_id: string | null
           age: number | null
           beehiiv_entry_synced: boolean | null
           beehiiv_entry_synced_at: string | null
@@ -224,8 +225,7 @@ export type Database = {
           id: string
           is_winner: boolean | null
           last_name: string
-          pap_affiliate_id: string | null
-          pap_referral_id: string | null
+          network_affiliate_id: string | null
           postal_code: string | null
           referral_count: number | null
           referral_url: string | null
@@ -234,6 +234,7 @@ export type Database = {
           terms_accepted: boolean
         }
         Insert: {
+          affiliate_id?: string | null
           age?: number | null
           beehiiv_entry_synced?: boolean | null
           beehiiv_entry_synced_at?: string | null
@@ -247,8 +248,7 @@ export type Database = {
           id?: string
           is_winner?: boolean | null
           last_name: string
-          pap_affiliate_id?: string | null
-          pap_referral_id?: string | null
+          network_affiliate_id?: string | null
           postal_code?: string | null
           referral_count?: number | null
           referral_url?: string | null
@@ -257,6 +257,7 @@ export type Database = {
           terms_accepted?: boolean
         }
         Update: {
+          affiliate_id?: string | null
           age?: number | null
           beehiiv_entry_synced?: boolean | null
           beehiiv_entry_synced_at?: string | null
@@ -270,8 +271,7 @@ export type Database = {
           id?: string
           is_winner?: boolean | null
           last_name?: string
-          pap_affiliate_id?: string | null
-          pap_referral_id?: string | null
+          network_affiliate_id?: string | null
           postal_code?: string | null
           referral_count?: number | null
           referral_url?: string | null
