@@ -29,18 +29,42 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Handle click events - just log them, don't increment entries
+    // Handle click events
     if (type === 'click' && sweeps) {
       console.log('Processing click event');
       console.log('Sweeps param:', sweeps);
 
-      // Extract referral ID from sweeps parameter
-      const referralId = sweeps;
-      if (!referralId) {
-        throw new Error('Invalid sweeps parameter format');
+      // Call Everflow API to record click
+      const EVERFLOW_API_KEY = Deno.env.get('EverflowAPI');
+      if (!EVERFLOW_API_KEY) {
+        throw new Error('Everflow API key not configured');
       }
 
-      console.log('Click recorded for referral ID:', referralId);
+      try {
+        const everflowResponse = await fetch('https://api.eflow.team/v1/track', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Eflow-API-Key': EVERFLOW_API_KEY
+          },
+          body: JSON.stringify({
+            type: 'click',
+            source_affid: sweeps,
+            api_key: EVERFLOW_API_KEY,
+            sub1: 'test_click'
+          })
+        });
+
+        if (!everflowResponse.ok) {
+          const errorText = await everflowResponse.text();
+          throw new Error(`Everflow API error: ${errorText}`);
+        }
+
+        console.log('Click recorded in Everflow successfully');
+      } catch (error) {
+        console.error('Error recording click in Everflow:', error);
+        throw error;
+      }
       
       return new Response(
         JSON.stringify({ success: true, message: 'Click recorded successfully' }),
@@ -75,15 +99,36 @@ serve(async (req) => {
       if (status === 'approved') {
         console.log('Processing approved conversion');
 
-        // Update the referral record
-        const { error: referralError } = await supabaseClient
-          .from('referrals')
-          .update({ converted: true })
-          .eq('tracking_id', trackingId);
+        // First record conversion in Everflow
+        const EVERFLOW_API_KEY = Deno.env.get('EverflowAPI');
+        if (!EVERFLOW_API_KEY) {
+          throw new Error('Everflow API key not configured');
+        }
 
-        if (referralError) {
-          console.error('Error updating referral:', referralError);
-          throw referralError;
+        try {
+          const everflowResponse = await fetch('https://api.eflow.team/v1/track', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Eflow-API-Key': EVERFLOW_API_KEY
+            },
+            body: JSON.stringify({
+              type: 'conversion',
+              source_affid: affiliateId,
+              transaction_id: trackingId,
+              api_key: EVERFLOW_API_KEY
+            })
+          });
+
+          if (!everflowResponse.ok) {
+            const errorText = await everflowResponse.text();
+            throw new Error(`Everflow API error: ${errorText}`);
+          }
+
+          console.log('Conversion recorded in Everflow successfully');
+        } catch (error) {
+          console.error('Error recording conversion in Everflow:', error);
+          throw error;
         }
 
         // Now increment the entry count for the referrer
@@ -176,4 +221,3 @@ serve(async (req) => {
     );
   }
 });
-

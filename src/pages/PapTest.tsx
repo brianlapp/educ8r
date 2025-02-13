@@ -18,9 +18,9 @@ const PapTest = () => {
     setIsLoading(true);
     try {
       const testData = {
-        refid: referralId,
-        clickid: `test_click_${Date.now()}`,
-        commission_status: 'approved',
+        affiliate_id: referralId,
+        click_id: `test_click_${Date.now()}`,
+        status: 'approved',
         email: 'test@example.com'
       };
 
@@ -122,7 +122,7 @@ const PapTest = () => {
                 <div>
                   <p className="text-sm font-medium">Webhook URL:</p>
                   <code className="block bg-gray-100 p-2 rounded text-sm break-all">
-                    https://xrycgmzgskcbhvdclflj.supabase.co/functions/v1/pap-webhook
+                    {`${window.location.origin}/functions/pap-webhook`}
                   </code>
                 </div>
               </div>
@@ -138,7 +138,8 @@ const PapTest = () => {
             <li>Paste your Referral ID above</li>
             <li>Use the "Test Click" button to test click tracking</li>
             <li>Use "Simulate Conversion" to test conversion tracking</li>
-            <li>Check your Beehiiv dashboard to verify the subscriber update</li>
+            <li>Check your Everflow dashboard to verify the click and conversion</li>
+            <li>Check your entry count in Supabase to verify the increment</li>
           </ol>
         </div>
       </div>
