@@ -67,13 +67,14 @@ const Login = () => {
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
+          .eq('role', 'admin')
           .maybeSingle();
 
         if (roleError) throw roleError;
 
         if (!role) {
           await supabase.auth.signOut();
-          throw new Error('Unauthorized access');
+          throw new Error('Unauthorized access: Admin privileges required');
         }
 
         toast({
