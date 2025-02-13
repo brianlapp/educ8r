@@ -43,18 +43,18 @@ serve(async (req) => {
       try {
         // Log the request we're about to make
         const clickPayload = {
-          offer_id: '1', // Required by Everflow
-          affiliate_id: sweeps,
+          offer_id: 1, // Required by Everflow as a number
+          affiliate_id: Number(sweeps), // Convert to number as required by Everflow
           sub1: 'test_click',
-          transaction_id: `test_${Date.now()}`, // Required for tracking
+          transaction_id: `test_${Date.now()}` // For tracking
         };
         console.log('Sending click to Everflow:', clickPayload);
 
-        const everflowResponse = await fetch('https://api.eflow.team/v1/affiliates/record-event', {
+        const everflowResponse = await fetch('https://api.eflow.team/v1/track', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Eflow-API-Key': EVERFLOW_API_KEY
+            'Authorization': `Bearer ${EVERFLOW_API_KEY}`
           },
           body: JSON.stringify(clickPayload)
         });
@@ -114,19 +114,18 @@ serve(async (req) => {
         try {
           // Log the request we're about to make
           const conversionPayload = {
-            offer_id: '1', // Required by Everflow
-            affiliate_id: affiliateId,
-            sub1: 'test_conversion',
+            offer_id: 1, // Required by Everflow as a number
+            affiliate_id: Number(affiliateId), // Convert to number as required by Everflow
             transaction_id: trackingId,
             amount: 0
           };
           console.log('Sending conversion to Everflow:', conversionPayload);
 
-          const everflowResponse = await fetch('https://api.eflow.team/v1/affiliates/record-event', {
+          const everflowResponse = await fetch('https://api.eflow.team/v1/track', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'X-Eflow-API-Key': EVERFLOW_API_KEY
+              'Authorization': `Bearer ${EVERFLOW_API_KEY}`
             },
             body: JSON.stringify(conversionPayload)
           });
