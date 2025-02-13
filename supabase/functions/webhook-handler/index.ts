@@ -111,7 +111,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${beehiivApiKey}`,
       },
       body: JSON.stringify({
-        tag_names: ['sweeps', 'Comprendi-sweeps']  // Changed from 'tags' to 'tag_names'
+        tag_ids: ['sweeps', 'Comprendi-sweeps']  // Changed to tag_ids as per API error
       }),
     });
 
@@ -128,7 +128,7 @@ serve(async (req) => {
     const { error: updateError } = await supabaseClient
       .from('form_submissions')
       .update({ 
-        beehiiv_id: beehiivData.data.id,  // Changed to data.id to match Beehiiv response structure
+        beehiiv_id: beehiivData.data.id,
         processed: true 
       })
       .eq('id', submissionData.id)
