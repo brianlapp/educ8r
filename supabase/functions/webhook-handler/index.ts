@@ -47,8 +47,10 @@ serve(async (req) => {
       throw new Error('Beehiiv API key not configured')
     }
 
+    const PUBLICATION_ID = 'pub_4b47c3db-7b59-4c82-a18b-16cf10fc2d23'
+    
     console.log('Sending data to Beehiiv...')
-    const beehiivResponse = await fetch('https://api.beehiiv.com/v2/subscribers', {
+    const beehiivResponse = await fetch(`https://api.beehiiv.com/v2/publications/${PUBLICATION_ID}/subscriptions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -56,11 +58,11 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         email: body.email,
+        publication_id: PUBLICATION_ID,
         reactivate_existing: true,
         send_welcome_email: true,
         utm_source: 'sweepwidget',
         utm_campaign: 'giveaway',
-        referral_code: body.referral_code || null,
         custom_fields: {
           first_name: body.first_name,
           last_name: body.last_name,
