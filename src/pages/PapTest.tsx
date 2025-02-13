@@ -9,6 +9,7 @@ const PapTest = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [affiliateId, setAffiliateId] = useState("");
   const [email, setEmail] = useState("");
+  const [networkAffiliateId, setNetworkAffiliateId] = useState("");
 
   const simulateConversion = async () => {
     if (!affiliateId) {
@@ -25,6 +26,7 @@ const PapTest = () => {
     try {
       const testData = {
         affiliate_id: affiliateId,
+        network_affiliate_id: networkAffiliateId,
         email: email,
         firstName: "Test",
         lastName: "User"
@@ -65,6 +67,19 @@ const PapTest = () => {
                 onChange={(e) => setAffiliateId(e.target.value)}
                 className="w-full p-2 border rounded"
                 placeholder="Enter the Affiliate ID"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Network Affiliate ID
+              </label>
+              <input
+                type="text"
+                value={networkAffiliateId}
+                onChange={(e) => setNetworkAffiliateId(e.target.value)}
+                className="w-full p-2 border rounded"
+                placeholder="Enter Network Affiliate ID (optional)"
               />
             </div>
 
@@ -114,6 +129,7 @@ const PapTest = () => {
           <h2 className="text-lg font-semibold mb-4">Testing Instructions</h2>
           <ol className="list-decimal list-inside space-y-2 text-sm">
             <li>Enter an Affiliate ID (use "1" for testing)</li>
+            <li>Enter a Network Affiliate ID (optional)</li>
             <li>Enter a test email address</li>
             <li>Click "Simulate Conversion" to test Everflow tracking</li>
             <li>Check your Everflow dashboard to verify the conversion</li>
