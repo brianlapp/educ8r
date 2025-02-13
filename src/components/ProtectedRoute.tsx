@@ -10,24 +10,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setIsAuthenticated(false);
-        return;
-      }
-
-      const { data: role, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error checking role:', error);
-        setIsAuthenticated(false);
-        return;
-      }
-
-      setIsAuthenticated(!!role);
+      setIsAuthenticated(!!session);
     };
 
     checkAuth();
